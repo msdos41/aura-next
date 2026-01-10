@@ -8,7 +8,7 @@ import { WindowManager } from '@/components/window/WindowManager'
 
 export default function Home() {
   useEffect(() => {
-    document.title = 'ChromeOS Web'
+    document.title = 'Aura-Next'
   }, [])
 
   return (

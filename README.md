@@ -1,4 +1,4 @@
-# ChromeOS-Web
+# Aura-Next
 
 A high-fidelity web-based replica of Chrome OS built with Next.js 16, featuring Material Design 3 aesthetics and a complete window management system.
 
@@ -14,7 +14,7 @@ A high-fidelity web-based replica of Chrome OS built with Next.js 16, featuring 
 ## Project Structure
 
 ```
-chrome-os-clone/
+aura-next/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── globals.css         # Global styles & M3 design tokens

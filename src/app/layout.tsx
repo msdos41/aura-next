@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ChromeOS Web',
+  title: 'Aura-Next',
   description: 'A high-fidelity web-based replica of Chrome OS',
 }
 
