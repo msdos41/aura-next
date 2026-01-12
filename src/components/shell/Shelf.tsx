@@ -12,12 +12,18 @@ export function Shelf() {
   const [showLauncher, setShowLauncher] = useState(false)
   const { time, date } = useSystemTime()
   const { windows } = useWindowStore()
-  const { openWindow, restoreWindow } = useWindowActions()
+  const { openWindow, restoreWindow, bringToFront, minimizeWindow } = useWindowActions()
 
   const handleAppClick = (appId: string) => {
-    const existingWindow = windows.find(w => w.appId === appId && w.isMinimized)
+    const existingWindow = windows.find(w => w.appId === appId)
+    
     if (existingWindow) {
-      restoreWindow(existingWindow.id)
+      if (existingWindow.isMinimized) {
+        restoreWindow(existingWindow.id)
+        bringToFront(existingWindow.id)
+      } else {
+        minimizeWindow(existingWindow.id)
+      }
     } else {
       const app = DEFAULT_APPS.find(a => a.id === appId)
       if (app) {
@@ -28,7 +34,7 @@ export function Shelf() {
   }
 
   const activeApps = DEFAULT_APPS.filter(app =>
-    windows.some(w => w.appId === app.id && !w.isMinimized)
+    windows.some(w => w.appId === app.id)
   )
 
   return (
