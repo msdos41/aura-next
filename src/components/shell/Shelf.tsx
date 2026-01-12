@@ -34,32 +34,30 @@ export function Shelf() {
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-between bg-glass-light/80 backdrop-blur-md px-6 shadow-2xl">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
-            onClick={() => setShowLauncher(!showLauncher)}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-40">
-              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-              <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
+          onClick={() => setShowLauncher(!showLauncher)}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-40">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+            <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </Button>
 
-          <div className="flex gap-1">
-            {activeApps.map(app => (
-              <Button
-                key={app.id}
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
-                onClick={() => handleAppClick(app.id)}
-              >
-                <span className="text-2xl">{app.icon}</span>
-              </Button>
-            ))}
-          </div>
+        <div className="flex gap-1">
+          {activeApps.map(app => (
+            <Button
+              key={app.id}
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
+              onClick={() => handleAppClick(app.id)}
+            >
+              <span className="text-2xl">{app.icon}</span>
+            </Button>
+          ))}
         </div>
 
         <div className="flex items-center gap-4">
