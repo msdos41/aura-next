@@ -44,7 +44,10 @@ export function Shelf() {
           variant="ghost"
           size="icon"
           className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
-          onClick={() => setShowLauncher(!showLauncher)}
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            setShowLauncher(!showLauncher)
+          }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-40">
             <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
