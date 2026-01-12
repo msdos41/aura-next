@@ -369,7 +369,7 @@ glass effect = {
 </motion.div>
 ```
 
-**Result**: Compact dark panel (2/3 screen size, left-aligned, no backdrop)
+**Result**: Compact dark panel (40% width, 66.67% height, left-aligned, no backdrop)
 
 **Launcher Features**:
 - Dark background (#111827) for better visibility during testing
@@ -377,6 +377,7 @@ glass effect = {
 - Left-aligned positioning (above Shelf button)
 - Click-outside-to-close functionality
 - Z-index: 10000 (always above windows)
+- Compact size (40% width x 66.67% height of screen)
 
 #### Quick Settings Panel
 

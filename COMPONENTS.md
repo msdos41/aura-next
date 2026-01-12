@@ -214,7 +214,7 @@ interface LauncherProps {
 - 6-column app grid
 - Smooth animations (Framer Motion)
 - Dark theme background (#111827) for better visibility
-- Compact size (2/3 of screen width and height)
+- Compact size (40% width, 66.67% height of screen)
 - Left-aligned position (above Shelf button)
 - Click-outside-to-close functionality
 - No full-screen overlay

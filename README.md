@@ -114,7 +114,7 @@ npm start        # Start production server
 - Shelf (bottom taskbar) with app launcher
 - System tray with clock
 - Quick settings panel
-- Launcher overlay with app grid (dark theme, 2/3 screen size)
+- Launcher overlay with app grid (dark theme, 40% width, 66.67% height)
 - Centered active app icons
 - Minimize/restore window via shelf icon click
 
