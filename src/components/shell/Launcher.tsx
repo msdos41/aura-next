@@ -41,7 +41,7 @@ export function Launcher({ isOpen, onClose, onAppSelect }: LauncherProps) {
         <motion.div
           ref={launcherRef}
           className={cn(
-            "fixed bottom-20 left-6 z-[10000] h-[66.666667vh] w-[66.666667vw] rounded-lg bg-gray-900 p-6 shadow-m3-5 overflow-auto"
+            "fixed bottom-20 left-6 z-[10000] h-[66.666667vh] w-[40vw] rounded-lg bg-gray-900 p-6 shadow-m3-5 overflow-auto"
           )}
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
