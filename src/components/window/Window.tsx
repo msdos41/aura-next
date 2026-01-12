@@ -127,7 +127,7 @@ export function Window({ id, title, icon, children }: WindowProps) {
     <motion.div
       ref={containerRef}
       className={cn(
-        'absolute flex flex-col overflow-hidden rounded-3xl bg-surface-10 shadow-m3-4',
+        'absolute flex flex-col overflow-hidden rounded-lg shadow-m3-4',
         window.isFocused && 'shadow-m3-5'
       )}
       style={{
@@ -136,6 +136,7 @@ export function Window({ id, title, icon, children }: WindowProps) {
         width: window.isMaximized ? '100%' : window.width,
         height: window.isMaximized ? 'calc(100vh - 64px)' : window.height,
         zIndex: window.zIndex,
+        backgroundColor: '#f5f5f5',
       }}
       onClick={handleWindowClick}
       initial={{ opacity: 0, scale: 0.95 }}
@@ -144,12 +145,13 @@ export function Window({ id, title, icon, children }: WindowProps) {
       transition={{ duration: 0.15 }}
     >
       <div
-        className="window-header flex h-12 shrink-0 items-center justify-between border-b border-surface-30 px-4"
+        className="window-header flex h-12 shrink-0 items-center justify-between border-b border-gray-600 px-4"
+        style={{ backgroundColor: '#333333' }}
         onMouseDown={handleDragStart}
       >
         <div className="flex items-center gap-3">
           <span className="text-lg">{icon || '🪟'}</span>
-          <span className="text-sm font-medium text-surface-80">{title}</span>
+          <span className="text-sm font-medium" style={{ color: '#ffffff' }}>{title}</span>
         </div>
         <div className="flex items-center gap-1">
           <WindowControl type="minimize" onClick={() => minimizeWindow(id)} />
@@ -161,7 +163,7 @@ export function Window({ id, title, icon, children }: WindowProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto" style={{ backgroundColor: '#f5f5f5' }}>
         {children}
       </div>
 

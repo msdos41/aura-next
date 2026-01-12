@@ -26,9 +26,9 @@ export function WindowControl({ type, onClick, className }: WindowControlProps) 
   }
 
   const colors = {
-    minimize: 'text-surface-80 hover:bg-surface-40',
-    maximize: 'text-surface-80 hover:bg-surface-40',
-    close: 'text-surface-80 hover:bg-red-600 hover:text-white',
+    minimize: 'text-white hover:bg-gray-600',
+    maximize: 'text-white hover:bg-gray-600',
+    close: 'text-white hover:bg-red-600',
   }
 
   return (
