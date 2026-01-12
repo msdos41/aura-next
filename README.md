@@ -106,6 +106,8 @@ npm start        # Start production server
 - Minimize/Maximize/Close functionality
 - Z-index stacking (click to bring to front)
 - Window persistence (IndexedDB)
+- High-contrast window design (dark header, light body)
+- 8px border radius for cleaner look
 
 ✅ Shell UI
 - Desktop workspace with wallpaper
@@ -113,6 +115,8 @@ npm start        # Start production server
 - System tray with clock
 - Quick settings panel
 - Launcher overlay with app grid
+- Centered active app icons
+- Minimize/restore window via shelf icon click
 
 ✅ Material Design 3
 - Tonal color palette system
