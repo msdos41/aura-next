@@ -1067,4 +1067,4 @@ When you add new features, update this guide:
 
 ---
 
-*Last updated: 2026-01-10*
+*Last updated: 2026-01-12*

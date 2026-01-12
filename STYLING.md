@@ -364,16 +364,19 @@ glass effect = {
 #### Launcher Overlay
 
 ```tsx
-<motion.div className="rounded-3xl bg-surface-10 shadow-m3-5">
+<motion.div className="rounded-lg bg-gray-900 shadow-m3-5">
   Launcher Content
-</motion.div>
-
-<motion.div className="bg-black/20 backdrop-blur-sm">
-  Backdrop
 </motion.div>
 ```
 
-**Result**: Solid panel with blurred backdrop
+**Result**: Compact dark panel (2/3 screen size, left-aligned, no backdrop)
+
+**Launcher Features**:
+- Dark background (#111827) for better visibility during testing
+- 8px border radius (consistent with windows)
+- Left-aligned positioning (above Shelf button)
+- Click-outside-to-close functionality
+- Z-index: 10000 (always above windows)
 
 #### Quick Settings Panel
 
@@ -741,4 +744,4 @@ To manually add dark mode:
 
 ---
 
-*Last updated: 2026-01-10*
+*Last updated: 2026-01-12*

@@ -213,7 +213,11 @@ interface LauncherProps {
 - Search input with real-time filtering
 - 6-column app grid
 - Smooth animations (Framer Motion)
-- Backdrop blur overlay
+- Dark theme background (#111827) for better visibility
+- Compact size (2/3 of screen width and height)
+- Left-aligned position (above Shelf button)
+- Click-outside-to-close functionality
+- No full-screen overlay
 
 **Imports**:
 ```typescript
@@ -660,4 +664,4 @@ interface WindowControlProps {
 
 ---
 
-*Last updated: 2026-01-10*
+*Last updated: 2026-01-12*
