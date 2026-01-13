@@ -1,6 +1,6 @@
 # Project Status: ChromeOS-Web Replica
 
-## 📅 Last Updated: 2026-01-12 (UI improvements)
+## 📅 Last Updated: 2026-01-13 (M3 dark theme + launcher icon update)
 ## 🎯 Current Milestone: Phase 1 - Foundation Complete + Bug Fixes
 
 ---
@@ -45,14 +45,16 @@
   - 自动初始化 IndexedDB 数据
 
   - [x] **Shelf.tsx - 底部任务栏**
-   - 应用启动器按钮（搜索图标）
-   - 活动应用显示（动态列出打开的窗口，包括最小化的）
-   - 活动应用图标居中显示
-   - 点击最小化窗口 → 恢复并带到最前
-   - 点击非最小化窗口 → 最小化
-   - 实时时钟显示（时间 + 日期）
-   - 玻璃拟态效果 (`backdrop-blur-md`)
-   - 响应式悬停状态
+    - 应用启动器按钮（Circle圆形图标，来自Lucide React）
+    - M3深色主题背景 (`bg-surface-10/95`, #1c1b1f, 95%不透明度)
+    - 高对比度设计（浅色图标 `text-surface-90` 在深色背景上）
+    - 活动应用显示（动态列出打开的窗口，包括最小化的）
+    - 活动应用图标居中显示
+    - 点击最小化窗口 → 恢复并带到最前
+    - 点击非最小化窗口 → 最小化
+    - 实时时钟显示（时间 + 日期）
+    - 玻璃拟态效果 (`backdrop-blur-md`)
+    - 响应式悬停状态 (`hover:bg-surface-40/50`)
 
   - [x] **Launcher.tsx - 应用抽屉**
    - 搜索框（带模糊过滤）
@@ -417,7 +419,10 @@ rm -rf .next && npx next build
 - **存储方案**: Zustand persist + IndexedDB（双重持久化保证）
 - **窗口圆角**: 使用 `rounded-lg` (8px) 优化视觉效果
 - **窗口配色**: 深色标题栏 (#333333) + 浅色本体 (#f5f5f5) 提高对比度
-- **玻璃拟态**: `backdrop-blur-md` + `bg-white/80` (light mode)
+- **Tailwind CSS v4 颜色系统**: 使用 `@theme` 指令在 `src/app/globals.css` 中定义 M3 颜色调色板
+- **Shelf 主题**: M3 深色背景 (`surface-10` #1c1b1f) + 高对比度图标 (`surface-90`)，符合 ChromeOS 设计语言
+- **图标选择**: 使用 Lucide React 的 `Circle` 组件替代搜索图标，提供更简洁现代的视觉效果，符合 M3 设计语言
+- **玻璃拟态**: `backdrop-blur-md` + `bg-white/80` (light mode) - Shelf 保留此效果但使用深色背景
 - **Launcher 样式**: 深色背景 (#111827) + 紧凑尺寸（宽度 40%，高度 66.67%）+ 左对齐
 
 #### 代码约定

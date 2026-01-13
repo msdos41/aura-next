@@ -147,6 +147,8 @@ app/page.tsx
 
 ### Material Design 3 (M3)
 - **Color Palette**: Tonal scales (0-100) for primary, secondary, surface
+  - **Implementation**: Defined in `src/app/globals.css` using Tailwind v4 `@theme` directive
+  - **Shelf Theme**: M3 dark background (`surface-10` #1c1b1f) with high contrast
 - **Border Radius**: `rounded-3xl` (24px) for all components
 - **Shadows**: 5-level elevation system (`shadow-m3-1` to `shadow-m3-5`)
 - **Typography**: Inter font family (Google Fonts)
@@ -155,6 +157,7 @@ app/page.tsx
 - **Effect**: `backdrop-blur-md` + `bg-white/80`
 - **Usage**: Shelf, Tray, Launcher overlays
 - **Base Class**: `.glass-light` in `globals.css`
+- **Shelf Update**: Now uses M3 dark theme (`bg-surface-10/95`) while retaining glassmorphism blur effect
 
 ---
 

@@ -111,12 +111,14 @@ npm start        # Start production server
 
 ✅ Shell UI
 - Desktop workspace with wallpaper
-- Shelf (bottom taskbar) with app launcher
+- Shelf (bottom taskbar) with app launcher button (Circle icon from Lucide React)
+- M3 dark theme background (surface-10 #1c1b1f, 95% opacity)
 - System tray with clock
 - Quick settings panel
 - Launcher overlay with app grid (dark theme, 40% width, 66.67% height)
 - Centered active app icons
 - Minimize/restore window via shelf icon click
+- High contrast design (light icons on dark background)
 
 ✅ Material Design 3
 - Tonal color palette system

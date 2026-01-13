@@ -53,6 +53,23 @@ M3 uses **tonal scales** (0-100) where:
 - `50` = Neutral tone
 - `100` = Pure white
 
+### Implementation Method
+
+**Tailwind CSS v4** uses the `@theme` directive in `src/app/globals.css`:
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-primary-0: #000000;
+  --color-primary-10: #21005d;
+  --color-primary-40: #6750a4;
+  /* ... other colors */
+}
+```
+
+This approach provides better performance and type safety compared to traditional `tailwind.config.ts`.
+
 ### Primary Palette (Purple)
 
 ```
@@ -412,9 +429,28 @@ glass effect = {
 
 ## ⚙️ Tailwind Configuration
 
-### File: `tailwind.config.ts`
+### Configuration Methods
 
-### Extended Theme
+Aura-Next uses **Tailwind CSS v4** with two configuration approaches:
+
+1. **`@theme` Directive** (Colors) - In `src/app/globals.css`
+2. **`tailwind.config.ts`** (Other) - For borderRadius, shadows, etc.
+
+### File: `src/app/globals.css`
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-primary-0: #000000;
+  --color-primary-40: #6750a4;
+  --color-surface-10: #1c1b1f;
+  --color-surface-90: #e6e1e5;
+  /* All M3 color tokens defined here */
+}
+```
+
+### File: `tailwind.config.ts`
 
 ```typescript
 theme: {
@@ -424,9 +460,6 @@ theme: {
       '4xl': '32px',    // Large radius
     },
     colors: {
-      primary: { /* 0-100 tonal scale */ },
-      secondary: { /* 0-100 tonal scale */ },
-      surface: { /* 0-100 tonal scale */ },
       glass: {
         light: 'rgba(255, 255, 255, 0.7)',
         dark: 'rgba(30, 30, 30, 0.7)',
@@ -468,17 +501,15 @@ plugins: [],  // No custom plugins yet
 
 ### Adding New Colors
 
-**Step 1**: Add to `tailwind.config.ts`
+**Step 1**: Add to `@theme` directive in `src/app/globals.css`
 
-```typescript
-colors: {
-  accent: {
-    10: '#1a237e',
-    20: '#283593',
-    40: '#3949ab',
-    80: '#7986cb',
-    100: '#ffffff',
-  },
+```css
+@theme {
+  --color-accent-10: #1a237e;
+  --color-accent-20: #283593;
+  --color-accent-40: #3949ab;
+  --color-accent-80: #7986cb;
+  --color-accent-100: #ffffff;
 }
 ```
 
@@ -489,6 +520,19 @@ colors: {
   Custom Colored Element
 </div>
 ```
+
+### Overriding Existing Colors
+
+**Step 1**: Override in `@theme` directive
+
+```css
+@theme {
+  --color-primary-40: #8b5cf6;  /* Override with custom purple */
+  --color-primary-80: #d8b4fe;  /* Override with custom light purple */
+}
+```
+
+**Note**: The `@theme` directive takes precedence over any default Tailwind colors.
 
 ### Adding New Shadows
 

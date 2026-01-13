@@ -144,15 +144,19 @@ useEffect(() => {
 **Purpose**: Bottom taskbar with app launcher and active apps.
 
 **Features**:
-- App launcher button (search icon)
+- App launcher button (Circle icon from Lucide React, provides cleaner modern look aligned with M3 design language)
+- M3 dark theme background (`bg-surface-10/95`, #1c1b1f, 95% opacity)
+- High contrast design (light icons `text-surface-90` on dark background)
 - Active app indicators
 - Real-time clock display
 - Opens Launcher overlay
+- Glassmorphism blur effect (`backdrop-blur-md`)
 
 **Props**: None (self-contained)
 
 **Imports**:
 ```typescript
+import { Circle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Launcher } from '@/components/shell/Launcher'
 import { DEFAULT_APPS } from '@/lib/constants'

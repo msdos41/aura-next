@@ -929,27 +929,23 @@ export default function Home() {
 
 ### Override Color Palette
 
-Edit `tailwind.config.ts`:
+**Method 1: Using `@theme` directive (Tailwind v4 recommended)**
 
-```typescript
-theme: {
-  extend: {
-    colors: {
-      primary: {
-        // Override with custom colors
-        40: '#8b5cf6',  // Purple (custom)
-        80: '#d8b4fe',  // Light purple
-      },
-      // Add custom color scheme
-      brand: {
-        10: '#6366f1',
-        20: '#4f46e5',
-        40: '#4338ca',
-        80: '#a5b4fc',
-        100: '#ffffff',
-      },
-    },
-  },
+Edit `src/app/globals.css`:
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-primary-40: #8b5cf6;  /* Override with custom purple */
+  --color-primary-80: #d8b4fe;  /* Override with custom light purple */
+  
+  /* Add custom color scheme */
+  --color-brand-10: #6366f1;
+  --color-brand-20: #4f46e5;
+  --color-brand-40: #4338ca;
+  --color-brand-80: #a5b4fc;
+  --color-brand-100: #ffffff;
 }
 ```
 
@@ -960,6 +956,28 @@ theme: {
   Custom branded element
 </div>
 ```
+
+**Method 2: Using `tailwind.config.ts` (for non-color configs)**
+
+Edit `tailwind.config.ts`:
+
+```typescript
+theme: {
+  extend: {
+    colors: {
+      // Note: This won't override @theme directive colors
+      // Use this for custom non-M3 color schemes
+      custom: {
+        10: '#6366f1',
+        40: '#4338ca',
+        80: '#a5b4fc',
+      },
+    },
+  },
+}
+```
+
+**Note**: Tailwind v4's `@theme` directive takes precedence over `tailwind.config.ts` for color definitions.
 
 ---
 
