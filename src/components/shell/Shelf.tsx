@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Circle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Launcher } from '@/components/shell/Launcher'
 import { DEFAULT_APPS } from '@/lib/constants'
@@ -39,20 +40,17 @@ export function Shelf() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-between bg-glass-light/80 backdrop-blur-md px-6 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-between bg-surface-10/95 backdrop-blur-md px-6 shadow-2xl">
         <Button
           variant="ghost"
           size="icon"
-          className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
+          className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
           onMouseDown={(e) => {
             e.stopPropagation()
             setShowLauncher(!showLauncher)
           }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-40">
-            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-            <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          <Circle className="h-6 w-6 text-surface-90" strokeWidth={2} />
         </Button>
 
         <div className="flex gap-1">
@@ -61,7 +59,7 @@ export function Shelf() {
               key={app.id}
               variant="ghost"
               size="icon"
-              className="h-12 w-12 rounded-3xl hover:bg-primary-40/20"
+              className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
               onClick={() => handleAppClick(app.id)}
             >
               <span className="text-2xl">{app.icon}</span>
