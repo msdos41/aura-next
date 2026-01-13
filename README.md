@@ -1,5 +1,7 @@
 # Aura-Next
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://aura-next-chi.vercel.app)
+
 A high-fidelity web-based replica of Chrome OS built with Next.js 16, featuring Material Design 3 aesthetics and a complete window management system.
 
 ## Tech Stack
