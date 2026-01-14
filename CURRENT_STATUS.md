@@ -1,6 +1,6 @@
 # Project Status: ChromeOS-Web Replica
 
-## 📅 Last Updated: 2026-01-13 (M3 dark theme + launcher icon update)
+## 📅 Last Updated: 2026-01-14 (Shelf redesign with Calendar and SystemTrayPanel)
 ## 🎯 Current Milestone: Phase 1 - Foundation Complete + Bug Fixes
 
 ---
@@ -44,17 +44,20 @@
   - 渐变背景 + 图案纹理
   - 自动初始化 IndexedDB 数据
 
-  - [x] **Shelf.tsx - 底部任务栏**
-    - 应用启动器按钮（Circle圆形图标，来自Lucide React）
-    - M3深色主题背景 (`bg-surface-10/95`, #1c1b1f, 95%不透明度)
-    - 高对比度设计（浅色图标 `text-surface-90` 在深色背景上）
-    - 活动应用显示（动态列出打开的窗口，包括最小化的）
-    - 活动应用图标居中显示
-    - 点击最小化窗口 → 恢复并带到最前
-    - 点击非最小化窗口 → 最小化
-    - 实时时钟显示（时间 + 日期）
-    - 玻璃拟态效果 (`backdrop-blur-md`)
-    - 响应式悬停状态 (`hover:bg-surface-40/50`)
+   - [x] **Shelf.tsx - 底部任务栏**
+     - 应用启动器按钮（Circle圆形图标，来自Lucide React）
+     - M3深色主题背景 (`bg-surface-10/95`, #1c1b1f, 95%不透明度)
+     - 高对比度设计（浅色图标 `text-surface-90` 在深色背景上）
+     - 活动应用显示（动态列出打开的窗口，包括最小化的）
+     - 活动应用图标居中显示
+     - 点击最小化窗口 → 恢复并带到最前
+     - 点击非最小化窗口 → 最小化
+     - 实时时钟显示（24小时制时间 + 日期）
+     - 玻璃拟态效果 (`backdrop-blur-md`)
+     - 响应式悬停状态 (`hover:bg-surface-40/50`)
+     - 日期按钮：只显示日（如 "15"），点击显示日历面板
+     - 系统托盘组：时间 + WiFi 图标 + 电池图标（顺序：时间在前）
+     - 点击系统托盘组显示系统托盘面板
 
   - [x] **Launcher.tsx - 应用抽屉**
    - 搜索框（带模糊过滤）
@@ -68,12 +71,59 @@
    - 无全屏遮罩
    - 层级 z-index: 10000（始终在窗口上方）
 
-- [x] **Tray.tsx - 系统托盘**
-  - 实时时钟（可点击）
-  - 快速设置面板（Toggle）
-  - WiFi/音量/亮度滑块（UI 模拟）
-  - 睡眠/电源按钮
-  - 平滑展开动画
+   - [x] **Shelf.tsx - 底部任务栏**
+     - 应用启动器按钮（Circle圆形图标，来自Lucide React）
+     - M3深色主题背景 (`bg-surface-10/95`, #1c1b1f, 95%不透明度)
+     - 高对比度设计（浅色图标 `text-surface-90` 在深色背景上）
+     - 活动应用显示（动态列出打开的窗口，包括最小化的）
+     - 活动应用图标居中显示
+     - 点击最小化窗口 → 恢复并带到最前
+     - 点击非最小化窗口 → 最小化
+     - 实时时钟显示（24小时制时间 + 日期）
+     - 玻璃拟态效果 (`backdrop-blur-md`)
+     - 响应式悬停状态 (`hover:bg-surface-40/50`)
+
+   - [x] **Launcher.tsx - 应用抽屉**
+    - 搜索框（带模糊过滤）
+    - 应用网格（6列布局）
+    - 搜索输入框实时过滤
+    - 平滑的动画过渡（Framer Motion）
+    - 深色背景（#111827）便于测试
+    - 紧凑尺寸（宽度 40%，高度 66.67%）
+    - 左对齐位置（在 Shelf 按钮上方）
+    - 点击外部自动关闭
+    - 无全屏遮罩
+    - 层级 z-index: 10000（始终在窗口上方）
+
+   - [x] **Calendar.tsx - 日历组件**
+    - 月历视图（7列网格布局）
+    - 上/下月切换按钮
+    - 星期标题（Su, Mo, Tu, We, Th, Fr, Sa）
+    - 高亮今天日期（紫色背景）
+    - 点击日期关闭日历
+    - 深色背景（`bg-surface-10`）
+    - 圆角 24px（`rounded-3xl`）
+    - 定位：日期按钮上方（右对齐）
+    - 宽度：320px（`w-80`）
+    - 点击外部自动关闭
+    - 高对比度设计（浅色文字 `text-surface-90`）
+
+   - [x] **SystemTrayPanel.tsx - 系统托盘面板**
+    - 亮度滑块（可拖动，基于 Radix UI Slider）
+    - 音量滑块（可拖动）
+    - WiFi / Sleep / Power 快捷按钮（3列网格）
+    - 深色背景（`bg-surface-10`）
+    - 圆角 24px（`rounded-3xl`）
+    - 定位：系统托盘按钮上方（右对齐）
+    - 宽度：320px（`w-80`）
+    - 点击外部自动关闭
+    - M3 阴影效果（`shadow-m3-5`）
+
+   - [x] **slider.tsx - Slider UI 组件**
+    - 基于 Radix UI Slider 组件封装
+    - 支持默认值、最大值、步进
+    - 自定义轨道和滑块样式
+    - M3 风格设计（浅色轨道 + 紫色滑块）
 
 #### 窗口系统
   - [x] **Window.tsx - 基础窗口组件**
@@ -96,8 +146,12 @@
   - AnimatePresence 过渡效果
 
 #### React Hooks
-- [x] **useSystemTime.ts** - 实时时钟 hook（每秒更新）
-- [x] **useWindowActions.ts** - 窗口操作封装（CRUD 抽象）
+ - [x] **useSystemTime.ts** - 实时时钟 hook（每秒更新）
+   - [x] **useWindowActions.ts** - 窗口操作封装（CRUD 抽象）
+   - API: `{ time, date, day } = useSystemTime()`
+   - Time 格式：24 小时制（如 "10:30"）
+   - Date 格式：短月份 + 日（如 "Jan 10"）
+   - Day 格式：仅显示日（如 "15"）
 
 #### 工具函数
 - [x] **lib/utils.ts**
@@ -168,13 +222,13 @@ postcss.config.js:
 
 #### 文件统计
 ```
-src/ 目录: 16 个 TypeScript/TSX 文件
+src/ 目录: 19 个 TypeScript/TSX 文件
 配置文件: 5 个 (next.config.ts, tsconfig.json, tailwind.config.ts, postcss.config.js, package.json)
 文档: README.md (完整)
 ```
 
 #### 当前可用功能
-- ✅ 应用启动器（点击搜索图标）
+- ✅ 应用启动器（点击圆形图标）
 - ✅ 打开窗口（从 Launcher 选择应用）
 - ✅ 窗口拖拽（拖动标题栏）
 - ✅ 窗口调整大小（右/下边缘）
@@ -182,7 +236,12 @@ src/ 目录: 16 个 TypeScript/TSX 文件
 - ✅ 多窗口堆叠（点击聚焦）
 - ✅ Shelf 显示活动应用（居中布局）
 - ✅ 点击 Shelf 图标最小化/恢复窗口
-- ✅ 快速设置面板（点击时钟）
+- ✅ 日期按钮（只显示日）
+- ✅ 点击日期显示日历面板
+- ✅ 日历功能（月份切换、今天高亮）
+- ✅ 系统托盘（24小时制时间 + WiFi + 电池）
+- ✅ 点击系统托盘显示系统托盘面板
+- ✅ 系统托盘面板（亮度/音量滑块 + 快捷按钮）
 - ✅ 实时时钟
 - ✅ 窗口状态持久化（IndexedDB）
 
@@ -223,87 +282,50 @@ src/ 目录: 16 个 TypeScript/TSX 文件
   - **文件修改**: `src/components/window/Window.tsx`
   - **测试状态**: ✅ 已验证，最大化窗口可以正确填满页面
 
-**详见**: [BUG_FIXES.md](./BUG_FIXES.md)
-
-#### 严重性：低
-1. **开发服务器响应问题**
-   - 现象：`npx next dev` 启动后，curl 访问超时
-   - 影响：开发环境测试困难
-   - 原因：可能是 Windows 环境下端口占用或防火墙问题
-   - 状态：生产构建正常（`npx next build` 成功）
-   - 建议：尝试手动打开 `http://localhost:3000` 或使用 `npm start`（生产模式）
-
-2. **窗口边界约束不完整**
-   - 现象：拖拽时窗口可能部分超出屏幕
-   - 影响：用户体验轻微影响
-   - 位置：`src/components/window/Window.tsx` - `constrainWindow` 函数
-   - 建议：改进边界检测逻辑，考虑窗口标题栏高度
-
-#### 严重性：中
-3. **窗口调整大小体验**
-   - 现象：只能通过右/下边缘调整，不支持左/上边缘
-   - 影响：不符合完整窗口系统预期
-   - 位置：`src/components/window/Window.tsx` - `handleResizeStart`
-   - 状态：功能已部分实现（e/s/se 边缘）
-
-4. **Z-Index 最大值未处理**
-   - 现象：长时间使用后 Z-Index 可能溢出
-   - 影响：理论问题，实际影响较小
-   - 位置：`src/store/useWindowStore.ts` - `zIndexCounter`
-   - 建议：实现 Z-Index 回收机制（类似 `MAX_Z_INDEX = 9999`）
-
-5. **窗口最大化无法铺满页面**
-   - 现象：点击最大化按钮后，窗口无法填满整个页面
-   - 影响：部分窗口会在屏幕外
-   - 原因：最大化时保留了窗口的原始 `left` 和 `top` 位置
-   - 位置：`src/components/window/Window.tsx` - 样式属性
-   - 状态：✅ 已修复（2026-01-10）
-   - 修复：最大化时将 `left` 和 `top` 重置为 0
-
----
-
-### ✅ Fixed Bugs (已修复的 Bug)
-
-#### 严重性：高 - ✅ 已修复
-**Bug 1: 页面刷新后窗口重新出现**
-- **现象**: 即使点击了窗口右上角的大叉关闭窗口，下次刷新页面时所有关闭过的窗口都会重新显示
-- **影响**: 严重，破坏了窗口关闭的持久化逻辑
-- **根因**: `useWindowStore.ts` 的 `syncToDB()` 函数只调用 `putWindow()` 但从未调用 `deleteWindow()`
-- **修复**: 
-  - 添加 `deletedWindowIds: Set<string>` 字段追踪已删除的窗口 ID
-  - 更新 `removeWindow()` 操作追踪删除的 ID
-  - 更新 `syncToDB()` 从 IndexedDB 删除窗口
-- **文件修改**: `src/store/useWindowStore.ts`
-- **测试状态**: ✅ 已验证，关闭的窗口不会在刷新后重新出现
-
-**Bug 2: 堆叠窗口关闭需要双击**
-- **现象**: 当多个窗口堆叠时，点击底下窗口的关闭按钮（X），无法第一时间关闭窗口，需要再点击一次
-- **影响**: 中等，严重影响用户体验
-- **根因**: 事件处理顺序问题，`Window.tsx` 使用 `onMouseDown` 而不是 `onClick` 来聚焦窗口
+**Bug 4: 日历/系统托盘面板无法通过按钮关闭**
+- **现象**: 点击日期按钮或系统托盘按钮打开面板后，再次点击相同按钮无法关闭面板
+- **影响**: 高，严重影响面板使用体验
+- **根因**: `onClick` 事件与 Calendar/SystemTrayPanel 的全局 `mousedown` 监听器产生竞态条件
 - **修复**:
-  - 将 `handleMouseDown` 改名为 `handleWindowClick`
-  - 将事件处理器从 `onMouseDown` 改为 `onClick`
-  - 这样窗口会在点击 X 按钮之前完全聚焦到最前
-- **文件修改**: `src/components/window/Window.tsx`
-- **测试状态**: ✅ 已验证，堆叠窗口可以在第一次点击时正常关闭
+  - 将 `onClick` 改为 `onMouseDown`
+  - 添加 `e.stopPropagation()` 阻止事件冒泡到全局监听器
+  - 确保按钮点击优先处理，避免面板先关闭再打开
+  - **文件修改**: `src/components/shell/Shelf.tsx`
+  - **测试状态**: ✅ 已验证，面板可以正常打开/关闭
 
-**Bug 3: 窗口最大化无法铺满页面**
-- **现象**: 点击最大化按钮后，窗口无法填满整个页面，部分窗口会在屏幕外
-- **影响**: 中等，窗口最大化体验不正确
-- **根因**: 最大化时保留了窗口的原始 `left` 和 `top` 位置，导致窗口偏移
+**Bug 5: 日历内容显示错误（星期标题和日期不对齐）**
+- **现象**: 星期标题使用独立 flex 容器，导致无法与下方日期网格对齐；非当前日期颜色不明显
+- **影响**: 中等，严重影响日历可读性
+- **根因**: 
+  - 星期标题使用 `grid grid-cols-7` 但嵌套在另一 grid 单元格中
+  - 日期按钮没有明确的文字颜色
 - **修复**:
-  - 最大化时将 `left` 和 `top` 重置为 0（屏幕左上角）
-  - 使用 `calc(100vh - 64px)` 使用视口高度减去 shelf 高度
-  - **文件修改**: `src/components/window/Window.tsx`
-  - **测试状态**: ✅ 已验证，最大化窗口可以正确填满页面
+  - 将星期标题直接渲染到 7 列网格中，移除独立容器
+  - 为日期按钮添加 `text-surface-90` 确保文字清晰
+  - 添加 `hover:text-surface-100` 增强 hover 效果
+  - **文件修改**: `src/components/shell/Calendar.tsx`
+  - **测试状态**: ✅ 已验证，星期标题与日期完美对齐，非当前日期清晰可见
+
+**Bug 6: 日历定位错误**
+- **现象**: 日历显示在屏幕左下角（launcher 按钮上方），而不是日期按钮上方
+- **影响**: 中等，日历位置不符合用户预期
+- **根因**: 使用 `left: '6px'` 固定定位，但日期按钮位于 Shelf 右侧
+- **修复**:
+  - 将 `left: '6px'` 改为 `right: '6px'`
+  - 日历现在显示在日期按钮正上方（屏幕右侧）
+  - **文件修改**: `src/components/shell/Calendar.tsx`
+  - **测试状态**: ✅ 已验证，日历定位正确
+
+**Bug 7: 日历宽度不符合要求**
+- **现象**: 日历宽度占满整个可用空间，不符合设计规范
+- **影响**: 低，影响美观性
+- **根因**: 日历容器没有宽度限制
+- **修复**:
+  - 添加 `w-80` 类（320px），约为屏幕宽度的 1/4
+  - **文件修改**: `src/components/shell/Calendar.tsx`
+  - **测试状态**: ✅ 已验证，日历宽度符合要求
 
 **详见**: [BUG_FIXES.md](./BUG_FIXES.md)
-
-#### 无阻塞性 Bug
-- ✅ 所有 TypeScript 编译通过
-- ✅ 生产构建成功
-- ✅ 导入路径解析正确（`@/*` 别名）
-- ✅ IndexedDB 操作无报错（try-catch 处理）
 
 ---
 

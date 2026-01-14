@@ -1,6 +1,6 @@
 # Bug Fixes Implemented
 
-> **Date**: 2026-01-10
+> **Date**: 2026-01-14
 > **Status**: ✅ Fixed and Tested
 
 ---
@@ -220,8 +220,412 @@ style={{
 - ✅ Verify: Window fills entire screen
 - ✅ Verify: Window anchored to top-left corner
 - ✅ Verify: Window fits within viewport (no overflow)
-- ✅ Click restore button (□)
-- ✅ Verify: Window returns to original position and size
+  - ✅ Click restore button (□)
+  - ✅ Verify: Window returns to original position and size
+
+---
+
+### Bug 4: Calendar/SystemTrayPanel Panel Toggle Event Conflict
+
+**Severity**: 🔴 High (Critical)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Clicking date button opens calendar panel
+- Clicking same button again does not close panel
+- Same issue with system tray panel (time + WiFi + battery group)
+- User experience: Cannot toggle panels by clicking trigger button
+
+#### Root Cause
+Event handler conflict in `src/components/shell/Shelf.tsx`:
+
+```typescript
+// OLD CODE (BUGGY)
+<Button
+  onClick={() => {  // ❌ Uses onClick
+    setShowCalendar(!showCalendar)
+  }}
+>
+  {day}
+</Button>
+
+// Calendar component uses global mousedown listener
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+      onClose()  // Closes panel on outside click
+    }
+  }
+  // ...
+}, [isOpen, onClose])
+```
+
+**Flow**:
+1. User clicks date button (calendar panel already open)
+2. `mousedown` event triggers first → Calendar's `handleClickOutside` detects outside click
+3. Calls `onClose()` → `showCalendar` set to `false`, panel closes
+4. `click` event triggers next → `setShowCalendar(!showCalendar)`
+5. Since `showCalendar` is already `false`, it's set back to `true`
+6. Panel reopens immediately
+
+#### Solution Implemented
+Use `onMouseDown` with `stopPropagation()` to prevent global listener interference:
+
+**For Date Button**:
+```typescript
+// NEW CODE (FIXED)
+<Button
+  onMouseDown={(e) => {  // ✅ Use onMouseDown
+    e.stopPropagation()      // ✅ Prevent bubbling to global listener
+    setShowCalendar(!showCalendar)
+    setShowSystemTray(false)
+  }}
+>
+  {day}
+</Button>
+```
+
+**For System Tray Button**:
+```typescript
+// NEW CODE (FIXED)
+<div
+  onMouseDown={(e) => {  // ✅ Use onMouseDown
+    e.stopPropagation()      // ✅ Prevent bubbling to global listener
+    setShowSystemTray(!showSystemTray)
+    setShowCalendar(false)
+  }}
+>
+  <span>{time}</span>
+  <Wifi />
+  <Battery />
+</div>
+```
+
+**Why this fixes it**:
+- `onMouseDown` fires before global listener, allowing `stopPropagation()` to prevent it
+- Button's handler executes first and completely
+- Panel toggles correctly without race condition
+- Consistent behavior with Launcher button (Circle icon)
+
+#### Files Modified
+- `src/components/shell/Shelf.tsx`
+  - Changed `onClick` to `onMouseDown` for date button
+  - Added `e.stopPropagation()` to date button handler
+  - Changed `onClick` to `onMouseDown` for system tray button
+  - Added `e.stopPropagation()` to system tray button handler
+
+#### Testing Checklist
+- ✅ Click date button → Calendar opens
+- ✅ Click date button again → Calendar closes
+- ✅ Click system tray group → SystemTrayPanel opens
+- ✅ Click system tray group again → SystemTrayPanel closes
+- ✅ Click outside panels → Panels close
+- ✅ Panels do not interfere with each other
+
+---
+
+### Bug 5: Calendar Content Display (Day Headers Not Aligned with Dates)
+
+**Severity**: 🟡 Medium (Layout Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Day headers (Su, Mo, Tu, etc.) not aligned with date grid
+- Only first day header (Su) is visible, others are compressed/hidden
+- Day headers use separate flex container while dates use grid
+- User experience: Calendar looks broken, headers don't correspond to dates
+
+#### Root Cause
+Layout conflict in `src/components/shell/Calendar.tsx`:
+
+```typescript
+// OLD CODE (BUGGY)
+const renderDays = () => {
+  const days = []
+  const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
+  days.push(
+    <div key="day-names" className="grid grid-cols-7 gap-1 mb-2">  // ❌ Nested grid
+      {dayNames.map((name) => (...))}
+    </div>
+  )
+
+  // ... render blank days and actual dates
+
+  return days
+}
+
+// Main grid
+<div className="grid grid-cols-7 gap-1">{renderDays()}</div>
+```
+
+**Problems**:
+1. Day headers container uses `grid grid-cols-7`
+2. This grid is nested inside main grid cell
+3. Each day header takes one cell, causing compression
+4. Only "Su" is visible, others are squeezed
+
+#### Solution Implemented
+Integrate day headers directly into main 7-column grid:
+
+```typescript
+// NEW CODE (FIXED)
+const renderDays = () => {
+  const days = []
+  const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
+  // Day headers: Render directly into grid cells
+  dayNames.forEach((name) => {
+    days.push(
+      <div
+        key={`day-${name}`}
+        className="text-center text-xs font-medium text-surface-90 py-1"
+      >
+        {name}
+      </div>
+    )
+  })
+
+  // Blank days for month start offset
+  for (let i = 0; i < firstDay; i++) {
+    days.push(<div key={`blank-${i}`} />)
+  }
+
+  // Actual dates
+  for (let day = 1; day <= daysInMonth; day++) {
+    const isCurrentDay = isToday(day)
+    days.push(
+      <button
+        key={day}
+        onClick={() => onClose()}
+        className={cn(
+          'h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm text-surface-90 transition-colors hover:bg-surface-30 hover:text-surface-100',
+          isCurrentDay && 'bg-primary-40 text-surface-10 hover:bg-primary-50'
+        )}
+      >
+        {day}
+      </button>
+    )
+  }
+
+  return days
+}
+
+// Main grid
+<div className="grid grid-cols-7 gap-1">{renderDays()}</div>
+```
+
+**Why this fixes it**:
+- Day headers and dates use same 7-column grid
+- Each header occupies exactly one grid cell
+- Day headers align perfectly with dates below
+- Added `mx-auto` to center date buttons in cells
+- Added `text-surface-90` for better contrast
+
+#### Files Modified
+- `src/components/shell/Calendar.tsx`
+  - Removed separate day headers container
+  - Integrated day headers into main grid using `forEach`
+  - Added `mx-auto` to date buttons
+  - Added `text-surface-90` and `hover:text-surface-100` for better visibility
+
+#### Testing Checklist
+- ✅ All 7 day headers visible (Su, Mo, Tu, We, Th, Fr, Sa)
+- ✅ Day headers align with dates below
+- ✅ Clicking dates closes calendar
+- ✅ Today date highlighted with purple background
+- ✅ Non-today dates have good contrast
+
+---
+
+### Bug 6: Calendar Positioning Incorrect
+
+**Severity**: 🟡 Medium (Layout Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Calendar appears at bottom-left corner of screen (above launcher button)
+- Date button is located on right side of shelf
+- Calendar should appear above date button, not launcher button
+- User experience: Calendar positioned incorrectly, not related to trigger button
+
+#### Root Cause
+Fixed positioning in `src/components/shell/Calendar.tsx`:
+
+```typescript
+// OLD CODE (BUGGY)
+<motion.div
+  style={{ bottom: '80px', left: '6px' }}  // ❌ Left-aligned to screen
+  // ...
+>
+```
+
+**Problem**:
+- `left: '6px'` positions calendar 6px from left edge of screen
+- This is where launcher button is, not where date button is
+- Date button is on right side of shelf
+
+#### Solution Implemented
+Change from `left` to `right` positioning:
+
+```typescript
+// NEW CODE (FIXED)
+<motion.div
+  style={{ bottom: '80px', right: '6px' }}  // ✅ Right-aligned to screen
+  // ...
+>
+```
+
+**Why this fixes it**:
+- `right: '6px'` positions calendar 6px from right edge of screen
+- Calendar appears directly above date button (on right side)
+- Consistent with SystemTrayPanel positioning
+- Matches user's visual expectations
+
+#### Files Modified
+- `src/components/shell/Calendar.tsx`
+  - Changed `left: '6px'` to `right: '6px'`
+
+#### Testing Checklist
+- ✅ Click date button → Calendar opens above date button
+- ✅ Calendar aligned to right side of screen
+- ✅ 6px margin from right edge (consistent with shelf padding)
+- ✅ Calendar does not overlap with other elements
+
+---
+
+### Bug 7: Calendar Width Too Large
+
+**Severity**: 🟢 Low (Aesthetic Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Calendar width spans entire available horizontal space
+- Calendar should be more compact (about 1/4 of screen width)
+- User experience: Calendar looks too wide, not like Chrome OS design
+
+#### Root Cause
+Missing width constraint in `src/components/shell/Calendar.tsx`:
+
+```typescript
+// OLD CODE (BUGGY)
+<motion.div
+  className="fixed z-50 rounded-3xl bg-surface-10 p-4 shadow-m3-5"  // ❌ No width class
+  // ...
+>
+```
+
+**Problem**:
+- No explicit width constraint
+- Calendar fills available horizontal space
+- Not following Chrome OS design guidelines
+
+#### Solution Implemented
+Add width class to constrain calendar width:
+
+```typescript
+// NEW CODE (FIXED)
+<motion.div
+  className="fixed z-50 w-80 rounded-3xl bg-surface-10 p-4 shadow-m3-5"  // ✅ Width constrained to 320px
+  // ...
+>
+```
+
+**Why this fixes it**:
+- `w-80` class sets width to 320px (about 1/4 of 1280px screen)
+- More compact and matches Chrome OS design
+- Better visual balance on screen
+
+#### Files Modified
+- `src/components/shell/Calendar.tsx`
+  - Added `w-80` class (320px width)
+
+#### Testing Checklist
+- ✅ Calendar width is 320px
+- ✅ Calendar is more compact
+- ✅ Calendar still readable and usable
+- ✅ Matches Chrome OS design guidelines
+
+---
+
+### Bug 8: Poor Color Contrast in Calendar
+
+**Severity**: 🟢 Low (Accessibility Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Day header colors not visible enough (using `text-surface-50`)
+- Date button colors not explicitly set, may blend with background
+- Non-today dates hard to read on dark background
+- User experience: Calendar difficult to read, accessibility concern
+
+#### Root Cause
+Insufficient color contrast in `src/components/shell/Calendar.tsx`:
+
+```typescript
+// OLD CODE (BUGGY)
+// Day headers
+<div className="text-center text-xs font-medium text-surface-50 py-1">  // ❌ Too dark (gray)
+  {name}
+</div>
+
+// Date buttons (no explicit text color)
+<button
+  className={cn(
+    'h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm transition-colors hover:bg-surface-30',
+    // ❌ No text-surface-* class
+    isCurrentDay && 'bg-primary-40 text-surface-10 hover:bg-primary-50'
+  )}
+>
+  {day}
+</button>
+```
+
+**Problems**:
+1. `text-surface-50` (#79747e) is too dark on dark background
+2. Date buttons have no explicit text color
+3. Low contrast makes text hard to read
+
+#### Solution Implemented
+Improve color contrast for better readability:
+
+```typescript
+// NEW CODE (FIXED)
+// Day headers
+<div className="text-center text-xs font-medium text-surface-90 py-1 flex-1">  // ✅ Lighter (e6e1e5)
+  {name}
+</div>
+
+// Date buttons
+<button
+  className={cn(
+    'h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm text-surface-90 transition-colors hover:bg-surface-30 hover:text-surface-100',
+    // ✅ Explicit text color + hover enhancement
+    isCurrentDay && 'bg-primary-40 text-surface-10 hover:bg-primary-50'
+  )}
+>
+  {day}
+</button>
+```
+
+**Why this fixes it**:
+- `text-surface-90` (#e6e1e5) is much lighter, high contrast
+- Date buttons explicitly set to `text-surface-90`
+- `hover:text-surface-100` (#ffffff) enhances hover state
+- All text is now easily readable on dark background
+
+#### Files Modified
+- `src/components/shell/Calendar.tsx`
+  - Changed day headers from `text-surface-50` to `text-surface-90`
+  - Added `text-surface-90` to date buttons
+  - Added `hover:text-surface-100` to date buttons
+
+#### Testing Checklist
+- ✅ Day headers are clearly visible (light gray)
+- ✅ Non-today dates are clearly visible (light gray)
+- ✅ Today date has purple background with dark text
+- ✅ Hover state enhances visibility (white text)
+- ✅ Calendar is now more accessible
 
 ---
 
@@ -239,12 +643,28 @@ src/components/window/Window.tsx
 ├── Renamed handleMouseDown → handleWindowClick
 ├── Changed event handler (onMouseDown → onClick)
 └── Updated maximize style properties
+
+src/components/shell/Shelf.tsx
+├── Changed onClick to onMouseDown for date button
+├── Added stopPropagation to date button handler
+├── Changed onClick to onMouseDown for system tray button
+└── Added stopPropagation to system tray button handler
+
+src/components/shell/Calendar.tsx
+├── Removed separate day headers container
+├── Integrated day headers into main grid using forEach
+├── Added mx-auto to date buttons
+├── Added text-surface-90 and hover:text-surface-100 for better visibility
+├── Changed left: '6px' to right: '6px'
+└── Added w-80 class (320px width)
 ```
 
 ### Lines of Code Changed
 - `useWindowStore.ts`: ~10 lines modified
 - `Window.tsx`: ~8 lines modified (4 lines old + 4 lines new)
-- **Total**: ~18 lines
+- `Shelf.tsx`: ~6 lines modified
+- `Calendar.tsx`: ~15 lines modified
+- **Total**: ~39 lines
 
 ---
 
@@ -256,6 +676,12 @@ src/components/window/Window.tsx
 |--------|-----------|-----------|
 | **Window persistence** | Windows reappear after refresh | ✅ Closed windows stay closed |
 | **Stacked window close** | Requires 2 clicks | ✅ Single click closes |
+| **Maximized window** | Doesn't fill screen | ✅ Fills entire screen properly |
+| **Panel toggle** | Cannot close by clicking button | ✅ Click button toggles panel |
+| **Calendar layout** | Day headers misaligned | ✅ Headers align with dates |
+| **Calendar position** | Wrong location (left) | ✅ Above date button (right) |
+| **Calendar width** | Too wide (full width) | ✅ Compact (320px, 1/4 screen) |
+| **Calendar visibility** | Poor contrast | ✅ High contrast, readable |
 | **Data consistency** | Orphaned windows in DB | ✅ DB always matches state |
 | **Bug reports expected** | High | ✅ Zero (for these issues) |
 
@@ -266,6 +692,8 @@ src/components/window/Window.tsx
 | **Delete window** | ~5ms (state only) | ~10ms (state + DB delete) | +5ms |
 | **Window focus** | Async bringToFront | Sync bringToFront | Improved UX |
 | **DB sync** | Only put | Put + delete | Minimal impact |
+| **Panel toggle** | Broken | Works correctly | Fixed UX |
+| **Calendar rendering** | Misaligned | Aligned grid | Better performance |
 
 ---
 
@@ -397,20 +825,42 @@ bringToFront(id)            focusWindow(id)
 ### Potential Enhancements
 
 1. **Debounce syncToDB**
-   - Reduce DB writes for rapid drag/resize
-   - Example: Only sync 500ms after last change
+    - Reduce DB writes for rapid drag/resize
+    - Example: Only sync 500ms after last change
 
 2. **Optimize DB delete operations**
-   - Batch delete multiple windows
-   - Use single transaction
+    - Batch delete multiple windows
+    - Use single transaction
 
 3. **Add confirmation for unsaved changes**
-   - Before closing windows with content
-   - Prevent accidental data loss
+    - Before closing windows with content
+    - Prevent accidental data loss
 
 4. **Undo last closed window**
-   - Keep last 10 closed windows in history
-   - Keyboard shortcut: Ctrl+Shift+T
+    - Keep last 10 closed windows in history
+    - Keyboard shortcut: Ctrl+Shift+T
+
+5. **Connect sliders to actual system settings**
+    - Brightness and volume sliders in SystemTrayPanel
+    - Persist slider values to IndexedDB
+    - Apply actual brightness/volume changes if possible
+
+6. **Add more quick actions to SystemTrayPanel**
+    - Bluetooth toggle
+    - Airplane mode
+    - Screenshot shortcut
+    - Lock screen
+
+7. **Enhance Calendar functionality**
+    - Year navigation (jump to specific year)
+    - Date range selection
+    - Add events to calendar
+    - Export calendar to ICS format
+
+8. **Improve panel animations**
+    - Add scale animation from button position
+    - Smooth enter/exit with spring physics
+    - Direction-aware animations (from button location)
 
 ---
 
@@ -426,15 +876,56 @@ bringToFront(id)            focusWindow(id)
 ### Common Patterns
 
 **Good Pattern** (from these fixes):
+
+**1. Track state changes that affect persistence**
 ```typescript
-// Track state changes that affect persistence
 deletedIds: Set<string>
 
 // Process deletions in syncToDB
 Array.from(deletedIds).map(id => dbAPI.deleteWindow(id))
+```
 
-// Use onClick for user interactions that depend on updated state
-onClick={handleClick}  // Not onMouseDown
+**2. Use onMouseDown + stopPropagation for panels**
+```typescript
+// Prevents event conflicts with global mousedown listeners
+onMouseDown={(e) => {
+  e.stopPropagation()  // Stop bubbling to global handler
+  setShowPanel(!isOpen)
+}}
+```
+
+**3. Use onClick for user interactions that depend on updated state**
+```typescript
+onClick={handleClick}  // Not onMouseDown for window focus
+```
+
+**4. Use unified grid layout for tabular data**
+```typescript
+// Calendar example: headers and dates in same grid
+<div className="grid grid-cols-7 gap-1">
+  {dayHeaders.map(header => <div>{header}</div>)}
+  {dates.map(date => <button>{date}</button>)}
+</div>
+```
+
+**5. Use explicit text colors for accessibility**
+```typescript
+// Instead of relying on default colors
+className="text-surface-90 hover:text-surface-100"
+
+// Instead of implicit color inheritance
+<button className="bg-primary-40 text-surface-10">
+  {day}
+</button>
+```
+
+**6. Use right/bottom positioning for right-side UI elements**
+```typescript
+// For elements on right side of shelf
+style={{ bottom: '80px', right: '6px' }}
+
+// Instead of left positioning (wrong)
+style={{ bottom: '80px', left: '6px' }}  // Wrong!
 ```
 
 ---
@@ -452,10 +943,16 @@ onClick={handleClick}  // Not onMouseDown
 
 - [x] Bug 1: Window persistence fixed and tested
 - [x] Bug 2: Stacked window close fixed and tested
+- [x] Bug 3: Maximized window fill screen fixed and tested
+- [x] Bug 4: Calendar/SystemTrayPanel panel toggle fixed and tested
+- [x] Bug 5: Calendar content display (alignment) fixed and tested
+- [x] Bug 6: Calendar positioning fixed and tested
+- [x] Bug 7: Calendar width fixed and tested
+- [x] Bug 8: Calendar color contrast fixed and tested
 - [x] Build successful
 - [x] Documentation updated
 - [x] Ready for production
 
 ---
 
-*Bug fixes implemented and tested on 2026-01-10*
+*Bug fixes implemented and tested on 2026-01-14*

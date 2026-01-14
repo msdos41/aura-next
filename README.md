@@ -29,10 +29,11 @@ aura-next/
 │   │   │   ├── Desktop.tsx     # Workspace area
 │   │   │   ├── Shelf.tsx      # Bottom taskbar
 │   │   │   ├── Launcher.tsx    # App drawer overlay
-│   │   │   └── Tray.tsx       # System tray
+│   │   │   ├── Calendar.tsx    # Calendar component
+│   │   │   └── SystemTrayPanel.tsx # System tray panel
 │   │   ├── ui/                # Reusable UI components (M3 styled)
 │   │   │   ├── button.tsx      # Button with variants
-│   │   │   └── window-control.tsx
+│   │   │   ├── slider.tsx      # Slider component
 │   │   └── window/            # Window system
 │   │       ├── Window.tsx       # Draggable/resizable window
 │   │       └── WindowManager.tsx
@@ -115,8 +116,10 @@ npm start        # Start production server
 - Desktop workspace with wallpaper
 - Shelf (bottom taskbar) with app launcher button (Circle icon from Lucide React)
 - M3 dark theme background (surface-10 #1c1b1f, 95% opacity)
-- System tray with clock
-- Quick settings panel
+- Date button (displays day of month, e.g., "15")
+- System tray with time (24-hour format), WiFi, and battery icons
+- Calendar overlay with monthly view, month navigation, and today highlight
+- System tray panel with brightness/volume sliders and quick settings
 - Launcher overlay with app grid (dark theme, 40% width, 66.67% height)
 - Centered active app icons
 - Minimize/restore window via shelf icon click

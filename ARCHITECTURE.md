@@ -104,6 +104,10 @@ Component → Hook → Store → persist middleware → IndexedDB
 | **Bring to Front** | Click Window | `bringToFront()` | Increments z-index |
 | **Minimize** | Click Button | `minimizeWindow()` | Sets `isMinimized: true` |
 | **Close** | Click X | `closeWindow()` | Removes from state |
+| **Open Calendar** | Click Date Button | `setShowCalendar(true)` | Shows calendar overlay |
+| **Close Calendar** | Click Date Button/Outside | `setShowCalendar(false)` | Hides calendar overlay |
+| **Open System Tray** | Click Time/WiFi/Battery | `setShowSystemTray(true)` | Shows system tray panel |
+| **Close System Tray** | Click Outside | `setShowSystemTray(false)` | Hides system tray panel |
 | **Persist** | State Change | `syncToDB()` | Saves to IndexedDB |
 
 ---
