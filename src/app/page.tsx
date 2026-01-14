@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import { Desktop } from '@/components/shell/Desktop'
 import { Shelf } from '@/components/shell/Shelf'
-import { Tray } from '@/components/shell/Tray'
 import { WindowManager } from '@/components/window/WindowManager'
 
 export default function Home() {
@@ -16,7 +15,6 @@ export default function Home() {
       <Desktop />
       <WindowManager />
       <Shelf />
-      <Tray />
     </div>
   )
 }

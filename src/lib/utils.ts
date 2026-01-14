@@ -29,9 +29,9 @@ export function constrainWindow(
 
 export function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
-    hour12: true,
+    hour12: false,
   })
 }
 
@@ -40,6 +40,10 @@ export function formatDate(date: Date): string {
     month: 'short',
     day: 'numeric',
   })
+}
+
+export function formatDay(date: Date): string {
+  return date.getDate().toString()
 }
 
 export function isMobile(): boolean {

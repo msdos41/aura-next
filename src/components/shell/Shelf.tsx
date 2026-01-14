@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Circle } from 'lucide-react'
+import { Circle, Wifi, Battery } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Launcher } from '@/components/shell/Launcher'
+import { Calendar } from '@/components/shell/Calendar'
+import { SystemTrayPanel } from '@/components/shell/SystemTrayPanel'
 import { DEFAULT_APPS } from '@/lib/constants'
 import { useWindowStore } from '@/store/useWindowStore'
 import { useSystemTime } from '@/hooks/useSystemTime'
@@ -11,7 +13,9 @@ import { useWindowActions } from '@/hooks/useWindowActions'
 
 export function Shelf() {
   const [showLauncher, setShowLauncher] = useState(false)
-  const { time, date } = useSystemTime()
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [showSystemTray, setShowSystemTray] = useState(false)
+  const { time, date, day } = useSystemTime()
   const { windows } = useWindowStore()
   const { openWindow, restoreWindow, bringToFront, minimizeWindow } = useWindowActions()
 
@@ -68,9 +72,30 @@ export function Shelf() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-sm font-medium text-surface-90">{time}</div>
-            <div className="text-xs text-surface-60">{date}</div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              setShowCalendar(!showCalendar)
+              setShowSystemTray(false)
+            }}
+          >
+            <span className="text-lg font-medium text-surface-90">{day}</span>
+          </Button>
+
+          <div
+            className="flex items-center gap-3 rounded-xl p-2 hover:bg-surface-40/50 cursor-pointer"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              setShowSystemTray(!showSystemTray)
+              setShowCalendar(false)
+            }}
+          >
+            <span className="text-sm font-medium text-surface-90">{time}</span>
+            <Wifi className="h-5 w-5 text-surface-90" strokeWidth={2} />
+            <Battery className="h-5 w-5 text-surface-90" strokeWidth={2} />
           </div>
         </div>
       </div>
@@ -79,6 +104,16 @@ export function Shelf() {
         isOpen={showLauncher}
         onClose={() => setShowLauncher(false)}
         onAppSelect={handleAppClick}
+      />
+
+      <Calendar
+        isOpen={showCalendar}
+        onClose={() => setShowCalendar(false)}
+      />
+
+      <SystemTrayPanel
+        isOpen={showSystemTray}
+        onClose={() => setShowSystemTray(false)}
       />
     </>
   )
