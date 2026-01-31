@@ -17,19 +17,19 @@ export function Desktop({ className }: DesktopProps) {
   const [showContextMenu, setShowContextMenu] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
 
-  // 初始化 IndexedDB
+  // Initialize IndexedDB
   useEffect(() => {
     initializeFromDB()
   }, [initializeFromDB])
 
-  // 右键菜单处理
+  // Context menu handler
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault()
     setContextMenuPosition({ x: e.clientX, y: e.clientY })
     setShowContextMenu(true)
   }
 
-  // 应用壁纸样式
+  // Apply wallpaper styles
   const getWallpaperStyle = () => {
     switch (settings.wallpaperType) {
       case 'gradient':
@@ -37,14 +37,14 @@ export function Desktop({ className }: DesktopProps) {
       case 'solid':
         return `bg-${settings.wallpaper}`
       case 'custom':
-        // 自定义壁纸通过内联样式应用，避免 Tailwind CSS 解析问题
+        // Custom wallpaper applied via inline style to avoid Tailwind CSS parsing issues
         return ''
       default:
         return 'bg-gradient-to-br from-surface-90 to-surface-80'
     }
   }
 
-  // 获取自定义壁纸的内联样式
+  // Get inline styles for custom wallpaper
   const getCustomWallpaperStyle = () => {
     if (settings.wallpaperType === 'custom' && settings.wallpaper) {
       return {
@@ -56,28 +56,24 @@ export function Desktop({ className }: DesktopProps) {
     return {}
   }
 
-  // 右键菜单项
+  // Context menu items
   const contextMenuItems: ContextMenuItem[] = [
     {
-      label: '更改壁纸',
+      label: 'Change Wallpaper',
       icon: <Image className="h-4 w-4" />,
       onClick: () => {
         setShowContextMenu(false)
 
-        // 检查壁纸窗口是否已存在
         const wallpaperWindow = windows.find((w) => w.appId === 'wallpaper')
 
         if (wallpaperWindow) {
-          // 如果窗口已存在但最小化了，恢复它
           if (wallpaperWindow.isMinimized) {
             restoreWindow(wallpaperWindow.id)
             bringToFront(wallpaperWindow.id)
           } else if (!wallpaperWindow.isFocused) {
-            // 如果窗口存在但未聚焦，置顶
             bringToFront(wallpaperWindow.id)
           }
         } else {
-          // 如果窗口不存在，打开新窗口
           openWindow('wallpaper', 'Wallpaper')
         }
       }
@@ -88,7 +84,7 @@ export function Desktop({ className }: DesktopProps) {
       separator: true
     },
     {
-      label: '刷新',
+      label: 'Refresh',
       icon: <RefreshCw className="h-4 w-4" />,
       onClick: () => window.location.reload()
     }
@@ -96,21 +92,24 @@ export function Desktop({ className }: DesktopProps) {
 
   return (
     <div
-      key={`${settings.wallpaperType}-${settings.wallpaper}`}
+      key={`${settings.wallpaperType}-${settings.wallpaper}-${settings.shelfPosition}`}
       className={cn(
         'relative h-full w-full',
         getWallpaperStyle(),
+        settings.shelfPosition === 'bottom' && 'pb-16',
+        settings.shelfPosition === 'left' && 'pl-16',
+        settings.shelfPosition === 'right' && 'pr-16',
         className
       )}
       style={getCustomWallpaperStyle()}
       onContextMenu={handleContextMenu}
     >
-      {/* 图案纹理 */}
+      {/* Pattern Texture */}
       <div className="absolute inset-0 opacity-30" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }} />
 
-      {/* 右键菜单 */}
+      {/* Context Menu */}
       {showContextMenu && (
         <ContextMenu
           isOpen={showContextMenu}

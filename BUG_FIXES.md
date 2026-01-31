@@ -773,6 +773,208 @@ Remove `flex-1` class from text span:
 
 ---
 
+### Bug 11: Shelf Disappears After Page Refresh
+
+**Severity**: 🔴 High (Critical)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- After page refresh, shelf completely disappears from the screen
+- Desktop area fills entire screen without shelf
+- No taskbar or system tray visible
+- User experience: Critical functionality broken
+
+#### Root Cause
+`shelfPosition` field missing in old `SystemSettings` stored in IndexedDB:
+
+```typescript
+// initializeFromDB() in useWindowStore.ts (OLD - BUGGY)
+set({
+  windows: windows || [],
+  workspaces: workspaces || get().workspaces,
+  settings: settings || createDefaultSettings(),  // ❌ If old settings exist, shelfPosition is undefined
+  zIndexCounter: Math.max(...(windows || []).map(w => w.zIndex), WINDOW_Z_INDEX_BASE),
+})
+```
+
+**Problem**:
+1. `settings || createDefaultSettings()` only uses default if settings is null/undefined
+2. If old settings exist (before `shelfPosition` was added), they are used
+3. Old settings don't have `shelfPosition` field
+4. `shelfPosition` becomes `undefined`
+5. Shelf component's conditional classes don't match (`shelfPosition === 'bottom'`, etc.)
+6. Shelf has no positioning classes → not displayed
+
+#### Solution Implemented
+Merge old settings with defaults to ensure all fields exist:
+
+```typescript
+// NEW CODE (FIXED)
+set({
+  windows: windows || [],
+  workspaces: workspaces || get().workspaces,
+  settings: {
+    ...createDefaultSettings(),  // ✅ Default values first
+    ...(settings || {})          // ✅ Then override with existing values
+  },
+  zIndexCounter: Math.max(...(windows || []).map(w => w.zIndex), WINDOW_Z_INDEX_BASE),
+})
+```
+
+**Why this fixes it**:
+- `...createDefaultSettings()` ensures all fields exist with default values
+- `...(settings || {})` overrides only the fields that exist in old settings
+- If old settings lack `shelfPosition`, it uses default `'bottom'`
+- Shelf always has a valid position → always displayed
+
+#### Files Modified
+- `src/store/useWindowStore.ts`
+  - Updated `initializeFromDB()` to merge settings with defaults
+
+#### Testing Checklist
+- ✅ Refresh page with shelf in bottom position → Shelf appears
+- ✅ Change shelf to left position, refresh → Shelf appears on left
+- ✅ Change shelf to right position, refresh → Shelf appears on right
+- ✅ All shelf buttons (launcher, apps, date, system tray) visible
+- ✅ Shelf position persists correctly after refresh
+
+---
+
+### Bug 12: Panel Positioning Incorrect After Shelf Position Change
+
+**Severity**: 🟡 Medium (UX Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Launcher, Calendar, SystemTrayPanel use hardcoded positioning (Tailwind classes)
+- When shelf changes position, panels don't adjust
+- Panels appear at wrong locations or completely off-screen
+- User experience: UI elements don't follow shelf position
+
+#### Root Cause
+Hardcoded Tailwind classes in Launcher.tsx, Calendar.tsx, and SystemTrayPanel.tsx:
+
+```typescript
+// Launcher.tsx (OLD - BUGGY)
+className="fixed z-[10000] bottom-20 left-6 h-[66.666667vh] w-[40vw] ..."
+// ❌ Always positions at bottom-20 left-6 regardless of shelf position
+
+// Calendar.tsx (OLD - BUGGY)
+className="fixed z-50 w-80 ..."
+style={{ bottom: '80px', right: '6px' }}  // ❌ Always right-aligned
+```
+
+**Problems**:
+1. No awareness of `shelfPosition` state
+2. Hardcoded positioning works only for bottom shelf
+3. Left/right shelf modes cause panels to appear off-screen
+4. Potential CSS conflicts with conditional Tailwind classes
+
+#### Solution Implemented
+Use inline styles with dynamic positioning based on `shelfPosition`:
+
+**Launcher.tsx**:
+```typescript
+// NEW CODE (FIXED)
+const getPositionStyle = () => {
+  switch (shelfPosition) {
+    case 'bottom':
+      return { bottom: '80px', left: '24px' }
+    case 'left':
+      return { top: '24px', left: '80px' }  // ✅ Near top of screen
+    case 'right':
+      return { top: '24px', right: '80px' }  // ✅ Near top of screen
+    default:
+      return {}
+  }
+}
+
+<motion.div
+  className="fixed z-[10000] h-[66.666667vh] w-[40vw] ..."
+  style={getPositionStyle()}  // ✅ Dynamic positioning
+>
+```
+
+**Calendar.tsx**:
+```typescript
+// NEW CODE (FIXED)
+const getPositionStyle = () => {
+  switch (shelfPosition) {
+    case 'bottom':
+      return { bottom: '80px', right: '6px' }
+    case 'left':
+      return { bottom: '6px', left: '80px' }
+    case 'right':
+      return { bottom: '6px', right: '80px' }
+    default:
+      return {}
+  }
+}
+
+<motion.div
+  className="fixed z-50 w-80 ..."
+  style={getPositionStyle()}  // ✅ Dynamic positioning
+>
+```
+
+**SystemTrayPanel.tsx**:
+```typescript
+// NEW CODE (FIXED)
+const getPositionStyle = () => {
+  switch (shelfPosition) {
+    case 'bottom':
+      return { bottom: '80px', right: '24px' }
+    case 'left':
+      return { bottom: '24px', left: '80px' }
+    case 'right':
+      return { bottom: '24px', right: '80px' }
+    default:
+      return {}
+  }
+}
+
+<motion.div
+  className="fixed z-50 w-80 ..."
+  style={getPositionStyle()}  // ✅ Dynamic positioning
+>
+```
+
+**Why this fixes it**:
+- Inline styles have higher CSS priority (no conflicts)
+- Position calculated dynamically based on `shelfPosition`
+- Launcher appears near circle button (top on left/right modes)
+- Calendar and SystemTrayPanel appear near date/tray buttons
+- All panels visible and correctly positioned for each shelf mode
+
+#### Files Modified
+- `src/components/shell/Launcher.tsx`
+  - Added `getPositionStyle()` function
+  - Removed hardcoded positioning classes
+  - Added `shelfPosition` prop
+
+- `src/components/shell/Calendar.tsx`
+  - Added `getPositionStyle()` function
+  - Changed from inline style to dynamic style
+  - Added `shelfPosition` prop
+
+- `src/components/shell/SystemTrayPanel.tsx`
+  - Added `getPositionStyle()` function
+  - Changed from inline style to dynamic style
+  - Added `shelfPosition` prop
+
+- `src/components/shell/Shelf.tsx`
+  - Pass `shelfPosition` to Launcher, Calendar, SystemTrayPanel
+
+#### Testing Checklist
+- ✅ Shelf bottom: Launcher at bottom-left, Calendar/SystemTray at bottom-right
+- ✅ Shelf left: Launcher at top-left, Calendar/SystemTray at bottom-left
+- ✅ Shelf right: Launcher at top-right, Calendar/SystemTray at bottom-right
+- ✅ All panels visible and within viewport
+- ✅ Panels don't overlap with shelf
+- ✅ Smooth transition when changing shelf position
+
+---
+
 ## 📊 Summary of Changes
 
 ### Modified Files
@@ -781,7 +983,9 @@ src/store/useWindowStore.ts
 ├── Added deletedWindowIds field
 ├── Updated removeWindow action
 ├── Updated syncToDB action
-└── Updated partialize configuration
+├── Updated partialize configuration
+├── Fixed initializeFromDB to merge settings with defaults
+└── Added updateShelfPosition action
 
 src/components/window/Window.tsx
 ├── Renamed handleMouseDown → handleWindowClick
@@ -792,7 +996,16 @@ src/components/shell/Shelf.tsx
 ├── Changed onClick to onMouseDown for date button
 ├── Added stopPropagation to date button handler
 ├── Changed onClick to onMouseDown for system tray button
-└── Added stopPropagation to system tray button handler
+├── Added stopPropagation to system tray button handler
+├── Added shelfPosition state and context menu
+├── Added dynamic shelf positioning (bottom/left/right)
+└── Pass shelfPosition to child components
+
+src/components/shell/Launcher.tsx
+├── Added shelfPosition prop
+├── Added getPositionStyle() function for dynamic positioning
+├── Removed hardcoded positioning classes
+└── Use inline style for positioning
 
 src/components/shell/Calendar.tsx
 ├── Removed separate day headers container
@@ -800,7 +1013,14 @@ src/components/shell/Calendar.tsx
 ├── Added mx-auto to date buttons
 ├── Added text-surface-90 and hover:text-surface-100 for better visibility
 ├── Changed left: '6px' to right: '6px'
-└── Added w-80 class (320px width)
+├── Added w-80 class (320px width)
+├── Added shelfPosition prop
+└── Added getPositionStyle() for dynamic positioning
+
+src/components/shell/SystemTrayPanel.tsx
+├── Added shelfPosition prop
+├── Added getPositionStyle() function for dynamic positioning
+└── Use inline style for positioning
 
 src/lib/wallpapers.ts
 ├── Removed bg- prefix from solid wallpaper values
@@ -812,17 +1032,24 @@ src/components/shell/Desktop.tsx
 
 src/components/ui/ContextMenu.tsx
 └── Removed flex-1 class from text span
+
+src/lib/constants.ts
+├── Added SHELF_WIDTH constant (64px)
+└── Added ShelfPosition type
 ```
 
 ### Lines of Code Changed
-- `useWindowStore.ts`: ~10 lines modified
+- `useWindowStore.ts`: ~20 lines modified
 - `Window.tsx`: ~8 lines modified (4 lines old + 4 lines new)
-- `Shelf.tsx`: ~6 lines modified
-- `Calendar.tsx`: ~15 lines modified
+- `Shelf.tsx`: ~30 lines modified
+- `Launcher.tsx`: ~20 lines modified
+- `Calendar.tsx`: ~30 lines modified
+- `SystemTrayPanel.tsx`: ~20 lines modified
 - `wallpapers.ts`: ~6 lines modified
 - `Desktop.tsx`: ~1 line modified
 - `ContextMenu.tsx`: ~1 line modified
-- **Total**: ~47 lines
+- `constants.ts`: ~3 lines modified
+- **Total**: ~139 lines
 
 ---
 
@@ -842,6 +1069,9 @@ src/components/ui/ContextMenu.tsx
 | **Calendar visibility** | Poor contrast | ✅ High contrast, readable |
 | **Solid color wallpapers** | Not working | ✅ All wallpapers work correctly |
 | **Context menu alignment** | Text centered | ✅ Text left-aligned (ChromeOS standard) |
+| **Shelf persistence** | Disappears after refresh | ✅ Always visible at correct position |
+| **Panel positioning** | Fixed position only | ✅ Dynamic based on shelf position |
+| **Shelf positioning** | Bottom only | ✅ Bottom/Left/Right via right-click |
 | **Data consistency** | Orphaned windows in DB | ✅ DB always matches state |
 | **Bug reports expected** | High | ✅ Zero (for these issues) |
 
@@ -1111,6 +1341,8 @@ style={{ bottom: '80px', left: '6px' }}  // Wrong!
 - [x] Bug 8: Calendar color contrast fixed and tested
 - [x] Bug 9: Solid color wallpapers not changing fixed and tested
 - [x] Bug 10: Context menu text alignment fixed and tested
+- [x] Bug 11: Shelf disappears after page refresh fixed and tested
+- [x] Bug 12: Panel positioning incorrect after shelf position change fixed and tested
 - [x] Build successful
 - [x] Documentation updated
 - [x] Ready for production

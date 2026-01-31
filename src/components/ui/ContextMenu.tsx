@@ -24,17 +24,17 @@ export function ContextMenu({ isOpen, items, position, onClose }: ContextMenuPro
   const MENU_WIDTH = 200
   const PADDING = 10
 
-  // 计算智能定位，防止超出屏幕
+  // Calculate smart positioning to prevent screen overflow
   const calculatePosition = () => {
     let x = position.x
     let y = position.y
 
-    // 防止超出右边界
+    // Prevent overflow on right edge
     if (x + MENU_WIDTH + PADDING > window.innerWidth) {
       x = window.innerWidth - MENU_WIDTH - PADDING
     }
 
-    // 防止超出下边界（估算菜单高度）
+    // Prevent overflow on bottom edge (estimated menu height)
     const estimatedHeight = items.length * 40 + 20
     if (y + estimatedHeight + PADDING > window.innerHeight) {
       y = window.innerHeight - estimatedHeight - PADDING
@@ -45,7 +45,7 @@ export function ContextMenu({ isOpen, items, position, onClose }: ContextMenuPro
 
   const adjustedPosition = calculatePosition()
 
-  // 点击外部关闭
+  // Click outside to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -67,8 +67,8 @@ export function ContextMenu({ isOpen, items, position, onClose }: ContextMenuPro
         ref={menuRef}
         className={cn(
           'fixed z-[10001] min-w-[200px] rounded-xl p-1 shadow-m3-4',
-          'bg-white text-surface-80',  // 浅色模式
-          'dark:bg-surface-10 dark:text-surface-90',  // 深色模式
+          'bg-white text-surface-80',  // Light mode
+          'dark:bg-surface-10 dark:text-surface-90',  // Dark mode
         )}
         style={{
           left: adjustedPosition.x,
@@ -87,8 +87,8 @@ export function ContextMenu({ isOpen, items, position, onClose }: ContextMenuPro
               <button
                 className={cn(
                   'flex w-full items-center justify-start gap-3 rounded-lg px-3 py-2 text-sm text-left transition-colors',
-                  'hover:bg-primary-40/20',  // hover 效果
-                  item.disabled && 'opacity-50 cursor-not-allowed',  // 禁用状态
+                  'hover:bg-primary-40/20',  // Hover effect
+                  item.disabled && 'opacity-50 cursor-not-allowed',  // Disabled state
                 )}
                 onClick={() => {
                   if (!item.disabled) {

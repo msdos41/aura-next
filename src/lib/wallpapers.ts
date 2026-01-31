@@ -4,11 +4,11 @@ export interface WallpaperPreset {
   id: string
   name: string
   type: 'gradient' | 'solid'
-  value: string // Tailwind 类名或颜色值
-  preview: string // 预览颜色/渐变
+  value: string // Tailwind class name or color value
+  preview: string // Preview color/gradient
 }
 
-// 预设渐变壁纸
+// Preset gradient wallpapers
 export const GRADIENT_WALLPAPERS: WallpaperPreset[] = [
   {
     id: 'gradient-1',
@@ -54,7 +54,7 @@ export const GRADIENT_WALLPAPERS: WallpaperPreset[] = [
   },
 ]
 
-// 预设纯色壁纸
+// Preset solid color wallpapers
 export const SOLID_WALLPAPERS: WallpaperPreset[] = [
   {
     id: 'solid-1',
@@ -100,7 +100,7 @@ export const SOLID_WALLPAPERS: WallpaperPreset[] = [
   },
 ]
 
-// 所有预设壁纸
+// All preset wallpapers
 export const ALL_PRESETS: WallpaperPreset[] = [
   ...GRADIENT_WALLPAPERS,
   ...SOLID_WALLPAPERS,

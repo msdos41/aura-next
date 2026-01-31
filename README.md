@@ -124,16 +124,19 @@ npm start        # Start production server
 - Smart window restoration (restore/bring-to-front if wallpaper window exists)
 
 ✅ Shell UI
-- Shelf (bottom taskbar) with app launcher button (Circle icon from Lucide React)
+- Shelf (taskbar) with position options: Bottom, Left, Right (via right-click menu)
 - M3 dark theme background (surface-10 #1c1b1f, 95% opacity)
+- App launcher button (Circle icon from Lucide React)
 - Date button (displays day of month, e.g., "15")
 - System tray with time (24-hour format), WiFi, and battery icons
 - Calendar overlay with monthly view, month navigation, and today highlight
 - System tray panel with brightness/volume sliders and quick settings
 - Launcher overlay with app grid (dark theme, 40% width, 66.67% height)
+- Dynamic panel positioning (Launcher, Calendar, SystemTrayPanel adapt to shelf position)
 - Centered active app icons
 - Minimize/restore window via shelf icon click
 - High contrast design (light icons on dark background)
+- Smooth transitions when changing shelf position (300ms ease-in-out animation)
 
 ✅ Material Design 3
 - Tonal color palette system
@@ -224,7 +227,7 @@ ISC
 - Chrome Browser with real iframe support
 - Calculator app with basic operations
 - Files App with virtual file system
-- Settings panel (theme, display, network)
+- Settings panel (theme, display, network, shelf position)
 - Terminal emulator with basic commands
 
 ### Phase 3: Advanced Features
@@ -233,6 +236,7 @@ ISC
 - Multi-monitor/virtual desktop switching
 - Toast notifications system
 - Window animation improvements
+- Shelf auto-hide option
 
 ### Phase 4: Polish
 - All ChromeOS default apps

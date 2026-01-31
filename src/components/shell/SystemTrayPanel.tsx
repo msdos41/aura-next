@@ -9,10 +9,24 @@ import { cn } from '@/lib/utils'
 interface SystemTrayPanelProps {
   isOpen: boolean
   onClose: () => void
+  shelfPosition: 'bottom' | 'left' | 'right'
 }
 
-export function SystemTrayPanel({ isOpen, onClose }: SystemTrayPanelProps) {
+export function SystemTrayPanel({ isOpen, onClose, shelfPosition }: SystemTrayPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
+
+  const getPositionStyle = () => {
+    switch (shelfPosition) {
+      case 'bottom':
+        return { bottom: '80px', right: '24px' }
+      case 'left':
+        return { bottom: '24px', left: '80px' }
+      case 'right':
+        return { bottom: '24px', right: '80px' }
+      default:
+        return {}
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,7 +55,7 @@ export function SystemTrayPanel({ isOpen, onClose }: SystemTrayPanelProps) {
           <motion.div
             ref={panelRef}
             className="fixed z-50 w-80 rounded-3xl bg-surface-10 p-4 shadow-m3-5"
-            style={{ bottom: '80px', right: '24px' }}
+            style={getPositionStyle()}
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}

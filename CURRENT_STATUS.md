@@ -8,25 +8,34 @@
 ### ✅ Completed (已完成)
 
 #### Phase 1: 基础架构与桌面自定义功能
-- [x] **桌面右键菜单**
-  - 创建通用 `ContextMenu.tsx` 组件（支持动态菜单项、智能定位、点击外部关闭）
-  - ChromeOS 风格样式（白色/深色自动跟随主题）
-  - 智能定位算法（防止超出屏幕边界）
-  - 菜单项左对齐（justify-start + text-left）
-  - 菜单项：更改壁纸、分隔线、刷新
+   - [x] **Desktop Right-Click Menu**
+   - Created generic `ContextMenu.tsx` component (dynamic items, smart positioning, click outside to close)
+   - ChromeOS styling (white/dark auto theme switching)
+   - Smart positioning algorithm (prevents overflow at screen edges)
+   - Left-aligned menu items (justify-start + text-left)
+   - Menu items: "Change Wallpaper", separator, "Refresh"
 
-- [x] **壁纸窗口（独立应用窗口）**
-  - 创建 `src/components/apps/WallpaperApp.tsx`（非模态面板）
-  - 创建 `src/lib/wallpapers.ts`（预设壁纸配置）
-  - 窗口大小：800x700，默认居中显示
-  - 三个窗口控制：最小化、最大化、关闭
-  - 窗口可拖拽、可调整大小
-  - 预设壁纸网格（6 种渐变 + 6 种纯色）
-  - 壁纸卡片（预览 + 名称 + 选中标记）
-  - 自定义图片上传（支持 JPG、PNG、WebP，限制 2MB）
-  - 文件类型验证和大小验证
-  - 选择壁纸后窗口保持打开状态（便于连续切换）
-  - ChromeOS 风格设计（圆角、阴影、动画）
+- [x] **Wallpaper Changer Window (Proper App Window)**
+   - Created `src/components/apps/WallpaperApp.tsx` (not a modal panel)
+   - Created `src/lib/wallpapers.ts` (wallpaper presets config)
+   - Window size: 800x700, centered by default
+   - Three window controls: minimize, maximize, close
+   - Draggable and resizable
+   - Preset wallpapers grid (6 gradients + 6 solid colors)
+   - Wallpaper cards (preview + name + checkmark indicator)
+   - Custom image upload (supports JPG, PNG, WebP, max 2MB)
+   - File type validation and size validation
+   - Window stays open after selection (for continuous browsing)
+   - ChromeOS styling (rounded corners, shadows, animations)
+
+- [x] **Shelf Customization**
+   - Right-click menu on shelf non-button areas
+   - Shelf position options: Bottom, Left, Right
+   - Smooth transitions when changing position (300ms ease-in-out)
+   - Dynamic panel positioning (Launcher, Calendar, SystemTrayPanel adapt to shelf position)
+   - Fixed initialization bug: shelf no longer disappears after page refresh
+   - Launcher appears near circle button (top in left/right modes, bottom in bottom mode)
+   - All English labels (Bottom, Left, Right)
 
 - [x] **壁纸配置系统**
   - 定义 `WallpaperPreset` 接口和 `WallpaperType` 类型
@@ -135,41 +144,50 @@
      - 玻璃拟态效果 (`backdrop-blur-md`)
      - 响应式悬停状态 (`hover:bg-surface-40/50`)
 
-   - [x] **Launcher.tsx - 应用抽屉**
-    - 搜索框（带模糊过滤）
-    - 应用网格（6列布局）
-    - 搜索输入框实时过滤
-    - 平滑的动画过渡（Framer Motion）
-    - 深色背景（#111827）便于测试
-    - 紧凑尺寸（宽度 40%，高度 66.67%）
-    - 左对齐位置（在 Shelf 按钮上方）
-    - 点击外部自动关闭
-    - 无全屏遮罩
-    - 层级 z-index: 10000（始终在窗口上方）
+   - [x] **Launcher.tsx - App Drawer**
+    - Search box (with fuzzy filtering)
+    - App grid (6-column layout)
+    - Real-time search filtering
+    - Smooth animation transitions (Framer Motion)
+    - Dark background (#111827)
+    - Compact size (width 40%, height 66.67%)
+    - Dynamic positioning based on shelf position:
+      - Bottom shelf: bottom-left (bottom: 80px, left: 24px)
+      - Left shelf: top-left (top: 24px, left: 80px)
+      - Right shelf: top-right (top: 24px, right: 80px)
+    - Click outside to auto-close
+    - No full-screen overlay
+    - z-index: 10000 (always above windows)
 
-   - [x] **Calendar.tsx - 日历组件**
-    - 月历视图（7列网格布局）
-    - 上/下月切换按钮
-    - 星期标题（Su, Mo, Tu, We, Th, Fr, Sa）
-    - 高亮今天日期（紫色背景）
-    - 点击日期关闭日历
-    - 深色背景（`bg-surface-10`）
-    - 圆角 24px（`rounded-3xl`）
-    - 定位：日期按钮上方（右对齐）
-    - 宽度：320px（`w-80`）
-    - 点击外部自动关闭
-    - 高对比度设计（浅色文字 `text-surface-90`）
+   - [x] **Calendar.tsx - Calendar Component**
+     - Monthly calendar view (7-column grid layout)
+     - Previous/next month navigation buttons
+     - Day headers (Su, Mo, Tu, We, Th, Fr, Sa)
+     - Highlight today's date (purple background)
+     - Click date to close calendar
+     - Dark background (`bg-surface-10`)
+     - Rounded corners 24px (`rounded-3xl`)
+     - Dynamic positioning based on shelf position:
+      - Bottom shelf: bottom-right (bottom: 80px, right: 6px)
+      - Left shelf: bottom-left (bottom: 6px, left: 80px)
+      - Right shelf: bottom-right (bottom: 6px, right: 80px)
+     - Width: 320px (`w-80`)
+     - Click outside to auto-close
+     - High contrast design (light text `text-surface-90`)
 
-   - [x] **SystemTrayPanel.tsx - 系统托盘面板**
-    - 亮度滑块（可拖动，基于 Radix UI Slider）
-    - 音量滑块（可拖动）
-    - WiFi / Sleep / Power 快捷按钮（3列网格）
-    - 深色背景（`bg-surface-10`）
-    - 圆角 24px（`rounded-3xl`）
-    - 定位：系统托盘按钮上方（右对齐）
-    - 宽度：320px（`w-80`）
-    - 点击外部自动关闭
-    - M3 阴影效果（`shadow-m3-5`）
+   - [x] **SystemTrayPanel.tsx - System Tray Panel**
+     - Brightness slider (draggable, based on Radix UI Slider)
+     - Volume slider (draggable)
+     - WiFi / Sleep / Power quick action buttons (3-column grid)
+     - Dark background (`bg-surface-10`)
+     - Rounded corners 24px (`rounded-3xl`)
+     - Dynamic positioning based on shelf position:
+      - Bottom shelf: bottom-right (bottom: 80px, right: 24px)
+      - Left shelf: bottom-left (bottom: 24px, left: 80px)
+      - Right shelf: bottom-right (bottom: 24px, right: 80px)
+     - Width: 320px (`w-80`)
+     - Click outside to auto-close
+     - M3 shadow effect (`shadow-m3-5`)
 
    - [x] **slider.tsx - Slider UI 组件**
     - 基于 Radix UI Slider 组件封装
@@ -301,19 +319,7 @@ src/ 目录: 19 个 TypeScript/TSX 文件
 
 ### ✅ Fixed Bugs (已修复的 Bug)
 
-#### 严重性：高 - ✅ 已修复
-**Bug 1: 页面刷新后窗口重新出现**
-- **现象**: 即使点击了窗口右上角的大叉关闭窗口，下次刷新页面时所有关闭过的窗口都会重新显示
-- **影响**: 严重，破坏了窗口关闭的持久化逻辑
-- **根因**: `useWindowStore.ts` 的 `syncToDB()` 函数只调用 `putWindow()` 但从未调用 `deleteWindow()`
-- **修复**:
-  - 添加 `deletedWindowIds: Set<string>` 字段追踪已删除的窗口 ID
-  - 更新 `removeWindow()` 操作追踪删除的 ID
-  - 更新 `syncToDB()` 从 IndexedDB 删除窗口
-  - **文件修改**: `src/store/useWindowStore.ts`
-  - **测试状态**: ✅ 已验证，关闭的窗口不会在刷新后重新出现
-
-**Bug 9: 纯色壁纸切换没有效果**
+**Bug 9: Solid Color Wallpapers Not Changing**
 - **现象**: 选择纯色壁纸后，桌面背景不更新
 - **影响**: 严重，壁纸功能无法正常使用
 - **根因**: `getWallpaperStyle()` 函数会去掉纯色壁纸的 'bg-' 前缀，但 wallpapers.ts 中 value 定义为 'bg-white'，导致 Tailwind 无法识别类名
@@ -322,6 +328,28 @@ src/ 目录: 19 个 TypeScript/TSX 文件
   - 修改 `getWallpaperStyle()`：solid 类型返回 `bg-${settings.wallpaper}`，动态添加前缀
   - **文件修改**: `src/lib/wallpapers.ts`, `src/components/shell/Desktop.tsx`
   - **测试状态**: ✅ 已验证，纯色壁纸可以正常切换
+
+**Bug 11: Shelf Disappears After Page Refresh**
+- **现象**: 页面刷新后 shelf 完全消失
+- **影响**: 严重，核心功能无法使用
+- **根因**: `initializeFromDB()` 使用 `settings || createDefaultSettings()`，如果旧 settings 存在（添加 `shelfPosition` 之前），`shelfPosition` 为 `undefined`，导致 shelf 没有定位类名
+- **修复**:
+  - 修改 `initializeFromDB()`：合并默认值和旧设置 `{ ...createDefaultSettings(), ...(settings || {}) }`
+  - 确保 `shelfPosition` 始终有默认值 `'bottom'`
+  - **文件修改**: `src/store/useWindowStore.ts`
+  - **测试状态**: ✅ 已验证，shelf 在刷新后始终显示
+
+**Bug 12: Panel Positioning Incorrect After Shelf Position Change**
+- **现象**: Launcher、Calendar、SystemTrayPanel 使用硬编码定位，切换 shelf 位置后面板位置不正确
+- **影响**: 中等，影响用户体验
+- **根因**: 使用 Tailwind 类名硬编码定位（`bottom-20 left-6` 等），没有考虑 `shelfPosition`
+- **修复**:
+  - 为 Launcher.tsx、Calendar.tsx、SystemTrayPanel.tsx 添加 `getPositionStyle()` 函数
+  - 使用 inline styles 动态定位（避免 CSS 冲突）
+  - 根据 `shelfPosition` 计算位置：底部、左侧、右侧
+  - Launcher 在左右模式时显示在顶部（接近圆形按钮）
+  - **文件修改**: `src/components/shell/Launcher.tsx`, `src/components/shell/Calendar.tsx`, `src/components/shell/SystemTrayPanel.tsx`, `src/components/shell/Shelf.tsx`
+  - **测试状态**: ✅ 已验证，所有面板根据 shelf 位置正确显示
 
 **Bug 10: 右键菜单文字居中对齐**
 - **现象**: 右键菜单项的文字居中显示，而不是左对齐
@@ -659,7 +687,7 @@ rm -rf .next && npx next build
 - **Phase 4（优化与适配）**: 0% （待开始）
 
 ### 🎯 总体进度
-**已完成约 35%**（基础架构、窗口系统、桌面自定义功能完整，但核心应用待实现）
+**已完成约 40%**（基础架构、窗口系统、桌面自定义功能、Shelf 定制完整，但核心应用待实现）
 
 ### ⏱️ 预计时间线
 - **Phase 2（核心应用）**: 1-2 周

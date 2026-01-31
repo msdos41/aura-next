@@ -1,7 +1,7 @@
 # ChromeOS-Web Architecture Documentation
 
 > **Project**: ChromeOS-Web Replica
-> **Last Updated**: 2026-01-10
+> **Last Updated**: 2026-01-31
 > **Framework**: Next.js 16 + React 19 + Zustand + Tailwind CSS 4.0
 
 ---
@@ -34,10 +34,10 @@ aura-next/
 │   ├── components/             # React components
 │   │   ├── shell/             # OS shell UI
 │   │   │   ├── Desktop.tsx     # Workspace area + right-click menu
-│   │   │   ├── Shelf.tsx      # Bottom taskbar
-│   │   │   ├── Launcher.tsx    # App drawer overlay
-│   │   │   ├── Calendar.tsx    # Calendar component
-│   │   │   └── SystemTrayPanel.tsx # System tray panel
+│   │   │   ├── Shelf.tsx      # Taskbar (bottom/left/right positions)
+│   │   │   ├── Launcher.tsx    # App drawer overlay (dynamic positioning)
+│   │   │   ├── Calendar.tsx    # Calendar component (dynamic positioning)
+│   │   │   └── SystemTrayPanel.tsx # System tray panel (dynamic positioning)
 │   │   ├── apps/              # Application components
 │   │   │   └── WallpaperApp.tsx # Wallpaper changer (Phase 1)
 │   │   ├── ui/                # Reusable UI components (M3 styled)
@@ -142,6 +142,7 @@ Component → Hook → Store → persist middleware → IndexedDB
 | **Close Calendar** | Click Date Button/Outside | `setShowCalendar(false)` | Hides calendar overlay |
 | **Open System Tray** | Click Time/WiFi/Battery | `setShowSystemTray(true)` | Shows system tray panel |
 | **Close System Tray** | Click Outside | `setShowSystemTray(false)` | Hides system tray panel |
+| **Change Shelf Position** | Right-click Shelf → Select Position | `updateSettings({ shelfPosition })` | Moves shelf to bottom/left/right |
 | **Persist** | State Change | `syncToDB()` | Saves to IndexedDB |
 
 ---
@@ -159,18 +160,21 @@ app/page.tsx
 │   └── lib/utils.ts
 ├── components/shell/Shelf.tsx
 │   ├── components/ui/button.tsx
+│   ├── components/ui/ContextMenu.tsx (shelf right-click menu)
 │   ├── components/shell/Launcher.tsx
 │   │   ├── lib/constants.ts
+│   │   └── lib/utils.ts
+│   ├── components/shell/Calendar.tsx
+│   │   ├── store/useWindowStore.ts (shelfPosition)
+│   │   └── lib/utils.ts
+│   ├── components/shell/SystemTrayPanel.tsx
+│   │   ├── store/useWindowStore.ts (shelfPosition)
 │   │   └── lib/utils.ts
 │   ├── store/useWindowStore.ts
 │   ├── hooks/useSystemTime.ts
 │   │   └── lib/utils.ts
 │   └── hooks/useWindowActions.ts
 │       └── store/useWindowStore.ts
-├── components/shell/Tray.tsx
-│   ├── lib/utils.ts
-│   ├── components/ui/button.tsx
-│   └── hooks/useSystemTime.ts
 └── components/window/WindowManager.tsx
     ├── store/useWindowStore.ts
     ├── components/window/Window.tsx

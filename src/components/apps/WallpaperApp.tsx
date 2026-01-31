@@ -14,50 +14,48 @@ export function WallpaperApp() {
   const { settings, updateWallpaper } = useWindowStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 选择预设壁纸（不关闭窗口）
+  // Select preset wallpaper (keep window open)
   const handleSelectPreset = (wallpaper: WallpaperPreset) => {
     updateWallpaper(wallpaper.value, wallpaper.type)
   }
 
-  // 上传自定义图片（不关闭窗口）
+  // Upload custom image (keep window open)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 验证文件类型
+    // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('请选择图片文件')
+      alert('Please select an image file')
       return
     }
 
-    // 验证文件大小（2MB 限制）
     const MAX_SIZE = 2 * 1024 * 1024
     if (file.size > MAX_SIZE) {
-      alert('图片大小不能超过 2MB')
+      alert('Image size cannot exceed 2MB')
       return
     }
 
-    // 读取文件
     const reader = new FileReader()
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string
       updateWallpaper(dataUrl, 'custom')
     }
     reader.onerror = () => {
-      alert('图片上传失败')
+      alert('Image upload failed')
     }
     reader.readAsDataURL(file)
   }
 
   return (
     <div className="flex h-full flex-col">
-      {/* 内容区域 */}
+      {/* Content Area */}
       <div className="p-6 overflow-y-auto flex-1">
         <div className="space-y-6">
-          {/* 渐变壁纸 */}
+          {/* Gradient Wallpapers */}
           <div>
             <h3 className="mb-3 text-sm font-medium text-surface-80 dark:text-surface-90">
-              渐变壁纸
+              Gradient Wallpapers
             </h3>
             <div className="grid grid-cols-3 gap-4">
               {GRADIENT_WALLPAPERS.map((wallpaper) => (
@@ -74,10 +72,10 @@ export function WallpaperApp() {
             </div>
           </div>
 
-          {/* 纯色壁纸 */}
+          {/* Solid Wallpapers */}
           <div>
             <h3 className="mb-3 text-sm font-medium text-surface-80 dark:text-surface-90">
-              纯色壁纸
+              Solid Wallpapers
             </h3>
             <div className="grid grid-cols-3 gap-4">
               {SOLID_WALLPAPERS.map((wallpaper) => (
@@ -94,10 +92,10 @@ export function WallpaperApp() {
             </div>
           </div>
 
-          {/* 自定义壁纸 */}
+          {/* Custom Wallpapers */}
           <div>
             <h3 className="mb-3 text-sm font-medium text-surface-80 dark:text-surface-90">
-              自定义壁纸
+              Custom Wallpapers
             </h3>
             <div
               className={cn(
@@ -112,10 +110,10 @@ export function WallpaperApp() {
                   <Upload className="h-6 w-6 text-primary-40" />
                 </div>
                 <p className="text-sm text-surface-80 dark:text-surface-90">
-                  点击上传图片
+                  Click to Upload Image
                 </p>
                 <p className="text-xs text-surface-60">
-                  支持 JPG, PNG, WebP（最大 2MB）
+                  Supports JPG, PNG, WebP (Max 2MB)
                 </p>
               </div>
             </div>
@@ -133,7 +131,6 @@ export function WallpaperApp() {
   )
 }
 
-// 壁纸卡片组件
 function WallpaperCard({
   wallpaper,
   isSelected,
@@ -153,12 +150,12 @@ function WallpaperCard({
       style={{ background: wallpaper.preview }}
       onClick={onSelect}
     >
-      {/* 壁纸名称 */}
+      {/* Wallpaper Name */}
       <div className="absolute bottom-2 left-2 rounded-lg bg-black/50 px-2 py-1">
         <p className="text-xs text-white">{wallpaper.name}</p>
       </div>
 
-      {/* 选中标记 */}
+      {/* Selection Indicator */}
       {isSelected && (
         <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary-40 text-white">
           <Check className="h-4 w-4" />

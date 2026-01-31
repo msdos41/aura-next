@@ -9,11 +9,25 @@ interface LauncherProps {
   isOpen: boolean
   onClose: () => void
   onAppSelect: (appId: string) => void
+  shelfPosition: 'bottom' | 'left' | 'right'
 }
 
-export function Launcher({ isOpen, onClose, onAppSelect }: LauncherProps) {
+export function Launcher({ isOpen, onClose, onAppSelect, shelfPosition }: LauncherProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const launcherRef = useRef<HTMLDivElement>(null)
+
+  const getPositionStyle = () => {
+    switch (shelfPosition) {
+      case 'bottom':
+        return { bottom: '80px', left: '24px' }
+      case 'left':
+        return { top: '24px', left: '80px' }
+      case 'right':
+        return { top: '24px', right: '80px' }
+      default:
+        return {}
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -40,9 +54,8 @@ export function Launcher({ isOpen, onClose, onAppSelect }: LauncherProps) {
       {isOpen && (
         <motion.div
           ref={launcherRef}
-          className={cn(
-            "fixed bottom-20 left-6 z-[10000] h-[66.666667vh] w-[40vw] rounded-lg bg-gray-900 p-6 shadow-m3-5 overflow-auto"
-          )}
+          className="fixed z-[10000] h-[66.666667vh] w-[40vw] rounded-lg bg-gray-900 p-6 shadow-m3-5 overflow-auto"
+          style={getPositionStyle()}
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}

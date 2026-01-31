@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils'
 interface CalendarProps {
   isOpen: boolean
   onClose: () => void
+  shelfPosition: 'bottom' | 'left' | 'right'
 }
 
-export function Calendar({ isOpen, onClose }: CalendarProps) {
+export function Calendar({ isOpen, onClose, shelfPosition }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState<Date | null>(null)
   const today = useRef<Date | null>(null)
 
@@ -49,6 +50,19 @@ export function Calendar({ isOpen, onClose }: CalendarProps) {
   const firstDay = currentDate ? getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth()) : 0
 
   const calendarRef = useRef<HTMLDivElement>(null)
+
+  const getPositionStyle = () => {
+    switch (shelfPosition) {
+      case 'bottom':
+        return { bottom: '80px', right: '6px' }
+      case 'left':
+        return { bottom: '6px', left: '80px' }
+      case 'right':
+        return { bottom: '6px', right: '80px' }
+      default:
+        return {}
+    }
+  }
 
   useEffect(() => {
     if (!currentDate) {
@@ -129,7 +143,7 @@ export function Calendar({ isOpen, onClose }: CalendarProps) {
           <motion.div
             ref={calendarRef}
             className="fixed z-50 w-80 rounded-3xl bg-surface-10 p-4 shadow-m3-5"
-            style={{ bottom: '80px', right: '6px' }}
+            style={getPositionStyle()}
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}

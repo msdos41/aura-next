@@ -6,11 +6,14 @@ export const WINDOW_Z_INDEX_BASE = 1000
 export const MAX_Z_INDEX = 9999
 
 export const SHELF_HEIGHT = 64
+export const SHELF_WIDTH = 64
 export const LAUNCHER_MAX_HEIGHT = 600
 export const TRAY_HEIGHT = 32
 
 export const WALLPAPER_WINDOW_WIDTH = 800
 export const WALLPAPER_WINDOW_HEIGHT = 700
+
+export type ShelfPosition = 'bottom' | 'left' | 'right'
 
 export const M3_COLORS = {
   primary: {
@@ -86,6 +89,7 @@ export interface SystemSettings {
   wallpaper: string
   wallpaperType: 'gradient' | 'solid' | 'custom'
   showShelf: boolean
+  shelfPosition: ShelfPosition
 }
 
 export interface App {

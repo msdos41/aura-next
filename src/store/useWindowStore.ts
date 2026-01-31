@@ -3,7 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 import { generateId } from '@/lib/utils'
 import { dbAPI } from '@/lib/db'
 import type { WindowState, Workspace, SystemSettings } from '@/lib/constants'
-import { DEFAULT_APPS, WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, WINDOW_Z_INDEX_BASE, WALLPAPER_WINDOW_WIDTH, WALLPAPER_WINDOW_HEIGHT, SHELF_HEIGHT } from '@/lib/constants'
+import { DEFAULT_APPS, WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, WINDOW_Z_INDEX_BASE, WALLPAPER_WINDOW_WIDTH, WALLPAPER_WINDOW_HEIGHT, SHELF_HEIGHT, SHELF_WIDTH } from '@/lib/constants'
 
 interface WindowStore {
   windows: WindowState[]
@@ -27,6 +27,7 @@ interface WindowStore {
   addWorkspace: (name: string) => void
   updateSettings: (settings: Partial<SystemSettings>) => void
   updateWallpaper: (wallpaper: string, wallpaperType: 'gradient' | 'solid' | 'custom') => void
+  updateShelfPosition: (position: 'bottom' | 'left' | 'right') => void
   initializeFromDB: () => Promise<void>
   syncToDB: () => Promise<void>
 }
@@ -36,6 +37,7 @@ const createDefaultSettings = (): SystemSettings => ({
   wallpaper: 'from-surface-90 to-surface-80',
   wallpaperType: 'gradient',
   showShelf: true,
+  shelfPosition: 'bottom',
 })
 
 export const useWindowStore = create<WindowStore>()(
@@ -57,7 +59,6 @@ export const useWindowStore = create<WindowStore>()(
         deletedWindowIds: new Set(),
 
         addWindow: (appId, title) => {
-          // 根据应用ID获取窗口大小
           const windowWidth = appId === 'wallpaper'
             ? WALLPAPER_WINDOW_WIDTH
             : WINDOW_DEFAULT_WIDTH
@@ -65,18 +66,29 @@ export const useWindowStore = create<WindowStore>()(
             ? WALLPAPER_WINDOW_HEIGHT
             : WINDOW_DEFAULT_HEIGHT
 
-          // 计算初始位置
+          const shelfPosition = get().settings.shelfPosition
           let initialX: number
           let initialY: number
 
           if (appId === 'wallpaper') {
-            // 壁纸窗口居中显示
-            initialX = Math.round((window.innerWidth - windowWidth) / 2)
-            initialY = Math.round((window.innerHeight - SHELF_HEIGHT - windowHeight) / 2)
+            if (shelfPosition === 'bottom') {
+              initialX = Math.round((window.innerWidth - windowWidth) / 2)
+              initialY = Math.round((window.innerHeight - SHELF_HEIGHT - windowHeight) / 2)
+            } else if (shelfPosition === 'left') {
+              initialX = Math.round((window.innerWidth - SHELF_WIDTH - windowWidth) / 2) + SHELF_WIDTH
+              initialY = Math.round((window.innerHeight - windowHeight) / 2)
+            } else {
+              initialX = Math.round((window.innerWidth - SHELF_WIDTH - windowWidth) / 2)
+              initialY = Math.round((window.innerHeight - windowHeight) / 2)
+            }
           } else {
-            // 其他窗口使用 cascade 位置
-            initialX = 100 + get().windows.length * 50
-            initialY = 100 + get().windows.length * 50
+            if (shelfPosition === 'left') {
+              initialX = 100 + get().windows.length * 50 + SHELF_WIDTH
+              initialY = 100 + get().windows.length * 50
+            } else {
+              initialX = 100 + get().windows.length * 50
+              initialY = 100 + get().windows.length * 50
+            }
           }
 
           const newWindow: WindowState = {
@@ -249,6 +261,17 @@ export const useWindowStore = create<WindowStore>()(
           get().syncToDB()
         },
 
+        updateShelfPosition: (position) => {
+          set((state) => ({
+            settings: {
+              ...state.settings,
+              shelfPosition: position,
+            },
+          }))
+
+          get().syncToDB()
+        },
+
         initializeFromDB: async () => {
           try {
             const [windows, workspaces, settings] = await Promise.all([
@@ -260,7 +283,10 @@ export const useWindowStore = create<WindowStore>()(
             set({
               windows: windows || [],
               workspaces: workspaces || get().workspaces,
-              settings: settings || createDefaultSettings(),
+              settings: {
+                ...createDefaultSettings(),
+                ...(settings || {})
+              },
               zIndexCounter: Math.max(...(windows || []).map(w => w.zIndex), WINDOW_Z_INDEX_BASE),
             })
           } catch (error) {
