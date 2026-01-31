@@ -12,15 +12,10 @@ interface DesktopProps {
 }
 
 export function Desktop({ className }: DesktopProps) {
-  const { initializeFromDB, settings, windows } = useWindowStore()
+  const { settings, windows } = useWindowStore()
   const { openWindow, restoreWindow, bringToFront } = useWindowActions()
   const [showContextMenu, setShowContextMenu] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
-
-  // Initialize IndexedDB
-  useEffect(() => {
-    initializeFromDB()
-  }, [initializeFromDB])
 
   // Context menu handler
   const handleContextMenu = (e: React.MouseEvent) => {

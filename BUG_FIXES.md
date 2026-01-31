@@ -975,6 +975,260 @@ const getPositionStyle = () => {
 
 ---
 
+### Bug 13: Flash of Default State on Page Refresh
+
+**Severity**: 🔴 High (Critical)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- When page refreshes, wallpaper and shelf position first display with default configuration
+- Then abruptly change ("flash") to DB configuration when IndexedDB loads
+- Creates poor user experience with visible state transition
+
+**Example Flow**:
+1. Page loads → Shelf at bottom (default), Wallpaper: Default gradient
+2. IndexedDB loads → Shelf jumps to left/right, Wallpaper changes to custom
+3. User sees both states in quick succession
+
+#### Root Cause
+- `useWindowStore` uses default values (`createDefaultSettings()`) for initial state
+- `Desktop.tsx` and `Shelf.tsx` render immediately with default state
+- `initializeFromDB()` is called in `useEffect` (after initial render)
+- DB loads asynchronously, then store updates → triggers re-render
+- User sees two state changes: defaults → DB values
+
+```typescript
+// OLD CODE (BUGGY)
+// page.tsx
+useEffect(() => {
+  initializeFromDB()  // ❌ Async, fires after initial render
+}, [])
+
+// Desktop.tsx
+const { settings } = useWindowStore()  // ❌ Uses default values first
+```
+
+#### Solution Implemented
+**Option**: Loading spinner with minimum display time + smooth fade-in
+
+1. **Created LoadingSpinner component** (`src/components/ui/LoadingSpinner.tsx`):
+```typescript
+export function LoadingSpinner({ className }: LoadingSpinnerProps) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-surface-90 z-[100]">
+      <Loader2
+        className={cn('size-20 animate-spin text-surface-40', className)}
+        strokeWidth={3}
+        role="status"
+        aria-label="Loading"
+      />
+    </div>
+  )
+}
+```
+
+2. **Added CSS animation** to `src/app/globals.css`:
+```css
+@layer utilities {
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+```
+
+3. **Modified `src/app/page.tsx`** to add initialization state:
+```typescript
+const [isInitialized, setIsInitialized] = useState(false)
+
+useEffect(() => {
+  document.title = 'Aura-Next'
+
+  const minLoadingTime = 1000 // At least 1 second
+
+  Promise.all([
+    initializeFromDB(),
+    new Promise(resolve => setTimeout(resolve, minLoadingTime))
+  ]).then(() => {
+    setIsInitialized(true)
+  })
+}, [initializeFromDB])
+```
+
+4. **Removed duplicate initialization** from `Desktop.tsx`:
+- Removed `initializeFromDB()` call from Desktop.tsx
+- Now only called once in page.tsx
+
+5. **Added fade-in animation** for desktop content:
+```typescript
+<AnimatePresence>
+  {isInitialized && (
+    <motion.div
+      key="content"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      <Desktop />
+      <WindowManager />
+      <Shelf />
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
+**Why this fixes it**:
+- LoadingSpinner displays immediately on page load
+- Minimum 1-second display ensures user sees at least one full rotation
+- Desktop and Shelf only render after DB is fully loaded
+- Fade-in animation provides smooth transition from loading to content
+- No flash of default state → seamless user experience
+
+#### Files Modified
+- `src/components/ui/LoadingSpinner.tsx` (NEW)
+  - Created loading spinner component
+  - Uses Tailwind CSS 4.x `size-20` class
+  - Uses CSS animation (no framer-motion dependency)
+  - Icon: `size-20` (80px), `strokeWidth={3}` (thicker lines)
+
+- `src/app/globals.css`
+  - Added `animate-spin` utility class
+  - Added `@keyframes spin` animation definition
+
+- `src/app/page.tsx`
+  - Added `isInitialized` state
+  - Added minimum loading time (1000ms)
+  - Added `AnimatePresence` and `motion.div` for fade-in effect
+  - Moved `initializeFromDB()` call from Desktop.tsx to page.tsx
+
+- `src/components/shell/Desktop.tsx`
+  - Removed duplicate `initializeFromDB()` call
+  - Now depends on parent (page.tsx) for initialization
+
+#### Testing Checklist
+- ✅ Page refresh → LoadingSpinner displays immediately
+- ✅ LoadingSpinner rotates smoothly (no delay)
+- ✅ LoadingSpinner displays for at least 1 second
+- ✅ Shelf position loads correctly immediately
+- ✅ Wallpaper loads correctly immediately
+- ✅ Smooth fade-in from loading to desktop
+- ✅ No visible flash of default state
+- ✅ No jarring visual changes
+
+---
+
+### Bug 14: LoadingSpinner Animation Delay
+
+**Severity**: 🟡 Medium (UX Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- LoadingSpinner icon doesn't start rotating immediately when page loads
+- Short delay (100-200ms) before animation starts
+- Creates disjointed user experience
+- User expectation: Animation should start immediately
+
+#### Root Cause
+Using `framer-motion` with `motion.div` for animation:
+
+```typescript
+// OLD CODE (BUGGY)
+<motion.div
+  animate={{ rotate: 360 }}
+  transition={{ duration: 1, repeat: Infinity, ease: "linear", delay: 0 }}
+>
+  <Loader2 className="h-20 w-20 text-surface-40" strokeWidth={3} />
+</motion.div>
+```
+
+**Problems**:
+1. Framer Motion requires React component to fully mount before starting animation
+2. Small delay between mount and animation trigger
+3. `h-20 w-20` classes don't work with Tailwind CSS 4.x
+4. Tailwind 4.x prefers `size-*` classes for consistent width/height
+
+#### Solution Implemented
+**Option**: Use CSS animation instead of framer-motion
+
+1. **Removed framer-motion dependency** from LoadingSpinner:
+```typescript
+// NEW CODE (FIXED)
+import { Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+// ❌ Removed: import { motion } from 'framer-motion'
+
+export function LoadingSpinner({ className }: LoadingSpinnerProps) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-surface-90 z-[100]">
+      <Loader2
+        className={cn('size-20 animate-spin text-surface-40', className)}
+        strokeWidth={3}
+        role="status"
+        aria-label="Loading"
+      />
+    </div>
+  )
+}
+```
+
+2. **Added CSS animation definition** in `src/app/globals.css`:
+```css
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+```
+
+3. **Changed from `h-20 w-20` to `size-20`** for Tailwind CSS 4.x compatibility:
+- Tailwind 4.x recommends `size-*` for consistent width/height
+- `size-20` = 80px (same as h-20 w-20)
+- More concise and follows best practices
+
+**Why this fixes it**:
+- CSS animation starts immediately with CSS load (no React mount delay)
+- No JavaScript/React dependency for animation execution
+- Better performance (CSS animations run on compositor thread)
+- `size-20` class works correctly with Tailwind CSS 4.x
+- Animation starts at 0ms, no perceptible delay
+
+#### Files Modified
+- `src/components/ui/LoadingSpinner.tsx`
+  - Removed framer-motion `motion.div` wrapper
+  - Removed `animate={{ rotate: 360 }}` and `transition` props
+  - Changed `h-20 w-20` to `size-20`
+  - Direct `animate-spin` class on Loader2 icon
+  - Added `role="status"` and `aria-label` for accessibility
+
+- `src/app/globals.css`
+  - Added `@keyframes spin` definition in `@layer utilities`
+  - Added `.animate-spin` utility class with animation properties
+
+#### Testing Checklist
+- ✅ LoadingSpinner starts rotating immediately on page load
+- ✅ No perceptible delay before animation starts
+- ✅ Animation is smooth (1 rotation per second)
+- ✅ Icon size is 80px (larger than default)
+- ✅ Icon lines are thicker (strokeWidth={3})
+- ✅ No "Loading..." text (cleaner UI)
+
+---
+
 ## 📊 Summary of Changes
 
 ### Modified Files
@@ -1340,12 +1594,14 @@ style={{ bottom: '80px', left: '6px' }}  // Wrong!
 - [x] Bug 7: Calendar width fixed and tested
 - [x] Bug 8: Calendar color contrast fixed and tested
 - [x] Bug 9: Solid color wallpapers not changing fixed and tested
-- [x] Bug 10: Context menu text alignment fixed and tested
-- [x] Bug 11: Shelf disappears after page refresh fixed and tested
-- [x] Bug 12: Panel positioning incorrect after shelf position change fixed and tested
-- [x] Build successful
-- [x] Documentation updated
-- [x] Ready for production
+ - [x] Bug 10: Context menu text alignment fixed and tested
+ - [x] Bug 11: Shelf disappears after page refresh fixed and tested
+ - [x] Bug 12: Panel positioning incorrect after shelf position change fixed and tested
+ - [x] Bug 13: Flash of default state on page refresh fixed and tested
+ - [x] Bug 14: LoadingSpinner animation delay fixed and tested
+ - [x] Build successful
+ - [x] Documentation updated
+ - [x] Ready for production
 
 ---
 
