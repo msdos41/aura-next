@@ -107,6 +107,7 @@ export function Shelf() {
             size="icon"
             className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
             onMouseDown={(e) => {
+              if (e.button !== 0) return
               e.stopPropagation()
               setShowLauncher(!showLauncher)
             }}
@@ -135,6 +136,7 @@ export function Shelf() {
             size="icon"
             className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
             onMouseDown={(e) => {
+              if (e.button !== 0) return
               e.stopPropagation()
               setShowCalendar(!showCalendar)
               setShowSystemTray(false)
@@ -149,6 +151,7 @@ export function Shelf() {
               shelfPosition !== 'bottom' && 'flex-col gap-1 mb-4'
             )}
             onMouseDown={(e) => {
+              if (e.button !== 0) return
               e.stopPropagation()
               setShowSystemTray(!showSystemTray)
               setShowCalendar(false)
