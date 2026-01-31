@@ -90,22 +90,30 @@ export function Shelf() {
         className={cn(
           'fixed z-50 flex items-center justify-between bg-surface-10/95 backdrop-blur-md shadow-2xl transition-all duration-300 ease-in-out',
           shelfPosition === 'bottom' && 'bottom-0 left-0 right-0 h-16 flex-row px-6',
-          shelfPosition === 'left' && 'left-0 top-0 bottom-0 w-16 flex-col py-6',
-          shelfPosition === 'right' && 'right-0 top-0 bottom-0 w-16 flex-col py-6'
+          shelfPosition === 'left' && 'left-0 top-0 bottom-0 flex-col py-6',
+          shelfPosition === 'right' && 'right-0 top-0 bottom-0 flex-col py-6'
         )}
+        style={{
+          width: shelfPosition === 'bottom' ? undefined : '64px'
+        }}
         onContextMenu={handleShelfContextMenu}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            setShowLauncher(!showLauncher)
-          }}
-        >
-          <Circle className="h-6 w-6 text-surface-90" strokeWidth={2} />
-        </Button>
+        <div className={cn(
+          shelfPosition === 'left' && 'mt-4',
+          shelfPosition === 'right' && 'mt-4'
+        )}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-12 w-12 rounded-3xl hover:bg-surface-40/50"
+            onMouseDown={(e) => {
+              e.stopPropagation()
+              setShowLauncher(!showLauncher)
+            }}
+          >
+            <Circle className="h-6 w-6 text-surface-90" strokeWidth={2} />
+          </Button>
+        </div>
 
         <div className={cn('flex gap-1', shelfPosition !== 'bottom' && 'flex-col')}>
           {activeApps.map(app => (
@@ -138,7 +146,7 @@ export function Shelf() {
           <div
             className={cn(
               'flex items-center gap-3 rounded-xl p-2 hover:bg-surface-40/50 cursor-pointer',
-              shelfPosition !== 'bottom' && 'flex-col gap-1'
+              shelfPosition !== 'bottom' && 'flex-col gap-1 mb-4'
             )}
             onMouseDown={(e) => {
               e.stopPropagation()
