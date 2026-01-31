@@ -66,7 +66,7 @@ export function ContextMenu({ isOpen, items, position, onClose }: ContextMenuPro
         <motion.div
         ref={menuRef}
         className={cn(
-          'fixed z-[10001] min-w-[200px] rounded-xl p-1 shadow-m3-4',
+          'fixed z-10001 min-w-50 rounded-xl p-1 shadow-m3-4',
           'bg-white text-surface-80',  // Light mode
           'dark:bg-surface-10 dark:text-surface-90',  // Dark mode
         )}

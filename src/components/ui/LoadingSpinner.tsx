@@ -9,7 +9,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ className }: LoadingSpinnerProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-surface-90 z-[100]">
+    <div className="fixed inset-0 flex items-center justify-center bg-surface-90 z-100">
       <Loader2 
         className={cn('size-20 animate-spin text-surface-40', className)} 
         strokeWidth={3}

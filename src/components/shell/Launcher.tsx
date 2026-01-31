@@ -54,7 +54,7 @@ export function Launcher({ isOpen, onClose, onAppSelect, shelfPosition }: Launch
       {isOpen && (
         <motion.div
           ref={launcherRef}
-          className="fixed z-[10000] h-[66.666667vh] w-[40vw] rounded-lg bg-gray-900 p-6 shadow-m3-5 overflow-auto"
+          className="fixed z-10000 h-[66.666667vh] w-[40vw] rounded-lg bg-gray-900 p-6 shadow-m3-5 overflow-auto"
           style={getPositionStyle()}
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
