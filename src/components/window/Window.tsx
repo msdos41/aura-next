@@ -150,7 +150,7 @@ export function Window({ id, title, icon, children }: WindowProps) {
         onMouseDown={handleDragStart}
       >
         <div className="flex items-center gap-3">
-          <span className="text-lg">{icon || '🪟'}</span>
+          {icon && <span className="text-lg">{icon}</span>}
           <span className="text-sm font-medium" style={{ color: '#ffffff' }}>{title}</span>
         </div>
         <div className="flex items-center gap-1">

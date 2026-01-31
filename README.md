@@ -101,7 +101,7 @@ npm start        # Start production server
 
 ## Features
 
-### Foundation Phase (Complete)
+### Phase 1: Foundation & Desktop Customization (Complete)
 
 ✅ Window Management System
 - Draggable windows with boundary constraints
@@ -112,8 +112,18 @@ npm start        # Start production server
 - High-contrast window design (dark header, light body)
 - 8px border radius for cleaner look
 
+✅ Desktop & Wallpaper System
+- Desktop workspace with pattern texture overlay
+- Desktop right-click context menu
+- Wallpaper changer as proper app window (800x700, centered)
+- 6 preset gradient wallpapers (Default, Ocean, Sunset, Forest, Midnight, Aurora)
+- 6 preset solid color wallpapers (White, Light Gray, Soft Blue, Soft Purple, Dark Gray, Dark Blue)
+- Custom image upload (JPG, PNG, WebP, max 2MB)
+- Live wallpaper preview with selection indicators
+- Wallpaper state persistence (IndexedDB + localStorage)
+- Smart window restoration (restore/bring-to-front if wallpaper window exists)
+
 ✅ Shell UI
-- Desktop workspace with wallpaper
 - Shelf (bottom taskbar) with app launcher button (Circle icon from Lucide React)
 - M3 dark theme background (surface-10 #1c1b1f, 95% opacity)
 - Date button (displays day of month, e.g., "15")
@@ -142,11 +152,14 @@ Default apps registered in the system:
 
 | App | Icon | Description |
 |-----|------|-------------|
+| Wallpaper | 🖼️ | Desktop wallpaper changer (Phase 1) |
 | Chrome | 🌐 | Web browser (coming soon) |
 | Files | 📁 | File manager (coming soon) |
 | Calculator | 🧮 | Calculator (coming soon) |
 | Settings | ⚙️ | System settings (coming soon) |
 | Terminal | 💻 | Terminal emulator (coming soon) |
+
+**Note**: Wallpaper app is accessible via desktop right-click menu, not from launcher.
 
 ## Configuration
 
@@ -207,21 +220,21 @@ ISC
 
 ## Future Roadmap
 
-### Sprint 2: Core Features
+### Phase 2: Core Applications
 - Chrome Browser with real iframe support
-- Calculator app
+- Calculator app with basic operations
 - Files App with virtual file system
-- Settings panel
-- Terminal emulator
+- Settings panel (theme, display, network)
+- Terminal emulator with basic commands
 
-### Sprint 3: Advanced Features
+### Phase 3: Advanced Features
 - Snap layouts (quarter/half screen)
-- Keyboard shortcuts (Win+Arrows)
+- Keyboard shortcuts (Win+Arrows, Alt+F4)
 - Multi-monitor/virtual desktop switching
-- Window persistence across sessions
-- Toast notifications
+- Toast notifications system
+- Window animation improvements
 
-### Sprint 4: Polish
+### Phase 4: Polish
 - All ChromeOS default apps
 - Adaptive UI (mobile/tablet modes)
 - Accessibility audit (WCAG AA)

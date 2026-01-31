@@ -1,11 +1,63 @@
 # Project Status: ChromeOS-Web Replica
 
-## 📅 Last Updated: 2026-01-14 (Shelf redesign with Calendar and SystemTrayPanel)
-## 🎯 Current Milestone: Phase 1 - Foundation Complete + Bug Fixes
+## 📅 Last Updated: 2026-01-31
+## 🎯 Current Milestone: Phase 1 - Foundation & Desktop Customization ✅ COMPLETE
 
 ---
 
 ### ✅ Completed (已完成)
+
+#### Phase 1: 基础架构与桌面自定义功能
+- [x] **桌面右键菜单**
+  - 创建通用 `ContextMenu.tsx` 组件（支持动态菜单项、智能定位、点击外部关闭）
+  - ChromeOS 风格样式（白色/深色自动跟随主题）
+  - 智能定位算法（防止超出屏幕边界）
+  - 菜单项左对齐（justify-start + text-left）
+  - 菜单项：更改壁纸、分隔线、刷新
+
+- [x] **壁纸窗口（独立应用窗口）**
+  - 创建 `src/components/apps/WallpaperApp.tsx`（非模态面板）
+  - 创建 `src/lib/wallpapers.ts`（预设壁纸配置）
+  - 窗口大小：800x700，默认居中显示
+  - 三个窗口控制：最小化、最大化、关闭
+  - 窗口可拖拽、可调整大小
+  - 预设壁纸网格（6 种渐变 + 6 种纯色）
+  - 壁纸卡片（预览 + 名称 + 选中标记）
+  - 自定义图片上传（支持 JPG、PNG、WebP，限制 2MB）
+  - 文件类型验证和大小验证
+  - 选择壁纸后窗口保持打开状态（便于连续切换）
+  - ChromeOS 风格设计（圆角、阴影、动画）
+
+- [x] **壁纸配置系统**
+  - 定义 `WallpaperPreset` 接口和 `WallpaperType` 类型
+  - 预设壁纸数组（`GRADIENT_WALLPAPERS`、`SOLID_WALLPAPERS`）
+  - 纯色壁纸 value 不带 'bg-' 前缀（white, surface-95 等）
+  - 所有预设壁纸导出（`ALL_PRESETS`）
+
+- [x] **状态管理扩展**
+  - 扩展 `SystemSettings` 接口添加 `wallpaper` 和 `wallpaperType`
+  - 添加 `updateWallpaper` 动作（支持三种壁纸类型）
+  - 壁纸状态持久化（IndexedDB + localStorage）
+  - 默认壁纸设置（渐变：surface-90 → surface-80）
+  - 添加窗口打开智能逻辑：检查是否存在、恢复最小化、置顶
+
+- [x] **桌面组件更新**
+  - 修改 `Desktop.tsx` 添加右键事件处理（`onContextMenu`）
+  - 动态壁纸样式应用（渐变、纯色、自定义图片）
+  - 纯色壁纸修复：使用 `bg-${settings.wallpaper}` 正确生成 Tailwind 类名
+  - 自定义壁纸内联样式应用（避免 Tailwind CSS 解析问题）
+  - 右键菜单渲染和状态管理
+  - key prop 强制组件重新渲染（解决纯色壁纸不更新的问题）
+
+- [x] **窗口管理器更新**
+  - 修改 `WindowManager.tsx` 添加 WallpaperApp 支持
+  - 窗口标题栏图标处理：壁纸窗口不显示图标
+  - 条件渲染：壁纸窗口显示 WallpaperApp，其他窗口显示占位符
+
+- [x] **常量配置扩展**
+  - 添加 `WALLPAPER_WINDOW_WIDTH = 800`
+  - 添加 `WALLPAPER_WINDOW_HEIGHT = 700`
+  - 壁纸窗口居中算法：考虑 shelf 高度
 
 #### 核心架构
 - [x] **Next.js 16 项目初始化**
@@ -254,12 +306,32 @@ src/ 目录: 19 个 TypeScript/TSX 文件
 - **现象**: 即使点击了窗口右上角的大叉关闭窗口，下次刷新页面时所有关闭过的窗口都会重新显示
 - **影响**: 严重，破坏了窗口关闭的持久化逻辑
 - **根因**: `useWindowStore.ts` 的 `syncToDB()` 函数只调用 `putWindow()` 但从未调用 `deleteWindow()`
-- **修复**: 
+- **修复**:
   - 添加 `deletedWindowIds: Set<string>` 字段追踪已删除的窗口 ID
   - 更新 `removeWindow()` 操作追踪删除的 ID
   - 更新 `syncToDB()` 从 IndexedDB 删除窗口
   - **文件修改**: `src/store/useWindowStore.ts`
   - **测试状态**: ✅ 已验证，关闭的窗口不会在刷新后重新出现
+
+**Bug 9: 纯色壁纸切换没有效果**
+- **现象**: 选择纯色壁纸后，桌面背景不更新
+- **影响**: 严重，壁纸功能无法正常使用
+- **根因**: `getWallpaperStyle()` 函数会去掉纯色壁纸的 'bg-' 前缀，但 wallpapers.ts 中 value 定义为 'bg-white'，导致 Tailwind 无法识别类名
+- **修复**:
+  - 修改 `wallpapers.ts`：纯色壁纸 value 去掉 'bg-' 前缀（'bg-white' → 'white'）
+  - 修改 `getWallpaperStyle()`：solid 类型返回 `bg-${settings.wallpaper}`，动态添加前缀
+  - **文件修改**: `src/lib/wallpapers.ts`, `src/components/shell/Desktop.tsx`
+  - **测试状态**: ✅ 已验证，纯色壁纸可以正常切换
+
+**Bug 10: 右键菜单文字居中对齐**
+- **现象**: 右键菜单项的文字居中显示，而不是左对齐
+- **影响**: 中等，影响用户体验
+- **根因**: 文本 span 使用了 `flex-1` 类，导致占据剩余空间，可能影响对齐
+- **修复**:
+  - 移除文本 span 的 `flex-1` 类
+  - 保留 `justify-start` 和 `text-left` 类
+  - **文件修改**: `src/components/ui/ContextMenu.tsx`
+  - **测试状态**: ✅ 已验证，菜单文字左对齐
 
 **Bug 2: 堆叠窗口关闭需要双击**
 - **现象**: 当多个窗口堆叠时，点击底下窗口的关闭按钮（X），无法第一时间关闭窗口，需要再点击一次
@@ -332,6 +404,108 @@ src/ 目录: 19 个 TypeScript/TSX 文件
 ### 📋 Next Priority Tasks (下次开始时的首要任务)
 
 **✅ Note**: Bug 1（窗口持久化）、Bug 2（堆叠窗口关闭）和 Bug 3（窗口最大化）已在 2026-01-10 修复并测试通过。详见 [BUG_FIXES.md](./BUG_FIXES.md)
+
+#### Phase 1: 基础架构与桌面自定义功能（优先级：高）✅ COMPLETED
+
+**1. 桌面右键菜单** ⭐ ✅
+- [x] 创建 `src/components/ui/ContextMenu.tsx` - 通用右键菜单组件
+- [x] ChromeOS 风格菜单（白色/深色自动跟随主题）
+- [x] 智能定位（避免超出屏幕）
+- [x] 点击外部自动关闭
+- [x] 支持分隔线和禁用状态
+- [x] 菜单项左对齐（justify-start + text-left）
+
+**2. 壁纸更改功能** ⭐ ✅
+- [x] 创建 `src/lib/wallpapers.ts` - 预设壁纸配置
+- [x] 创建 `src/components/apps/WallpaperApp.tsx` - 壁纸选择窗口
+- [x] 窗口大小：800x700，默认居中
+- [x] 支持预设壁纸（6 种渐变 + 6 种纯色）
+- [x] 支持上传本地图片（data URL 存储）
+- [x] 壁纸预览功能（色块/渐变预览）
+- [x] 文件类型验证（JPG、PNG、WebP）
+- [x] 文件大小限制（< 2MB）
+- [x] 选择壁纸后窗口保持打开
+- [x] 智能窗口恢复逻辑
+
+**3. 状态管理扩展** ⭐ ✅
+- [x] 扩展 `SystemSettings` 接口添加 `wallpaper` 和 `wallpaperType`
+- [x] 添加 `updateWallpaper` 动作
+- [x] 壁纸状态持久化（IndexedDB + localStorage）
+- [x] 更新默认壁纸设置
+- [x] 窗口打开智能逻辑（检查/恢复/置顶）
+
+**4. 桌面组件更新** ⭐ ✅
+- [x] 修改 `src/components/shell/Desktop.tsx` 添加右键事件处理
+- [x] 根据壁纸设置应用样式（渐变、纯色、自定义图片）
+- [x] 纯色壁纸修复：动态添加 bg- 前缀
+- [x] 自定义壁纸内联样式应用（避免 Tailwind CSS 解析问题）
+- [x] 右键菜单渲染和状态管理
+- [x] key prop 强制重新渲染（解决纯色壁纸更新问题）
+
+**5. 窗口管理器更新** ⭐ ✅
+- [x] 修改 `src/components/window/WindowManager.tsx` 添加 WallpaperApp 支持
+- [x] 壁纸窗口不显示标题栏图标
+- [x] 条件渲染 WallpaperApp 和占位符
+
+**6. 常量配置扩展** ⭐ ✅
+- [x] 添加 `WALLPAPER_WINDOW_WIDTH` 和 `WALLPAPER_WINDOW_HEIGHT`
+- [x] 壁纸窗口居中算法
+
+### 技术实现说明
+
+**右键菜单定位算法**：
+```typescript
+const calculatePosition = (x: number, y: number) => {
+  let adjustedX = x
+  let adjustedY = y
+
+  // 防止超出右边界
+  if (x + MENU_WIDTH + PADDING > window.innerWidth) {
+    adjustedX = window.innerWidth - MENU_WIDTH - PADDING
+  }
+
+  // 防止超出下边界
+  const estimatedHeight = items.length * 40 + 20
+  if (y + estimatedHeight + PADDING > window.innerHeight) {
+    adjustedY = window.innerHeight - estimatedHeight - PADDING
+  }
+
+  return { x: adjustedX, y: adjustedY }
+}
+```
+
+**图片上传处理**：
+- 使用 `FileReader` API 将图片转换为 data URL
+- 验证文件类型（`image/*`）
+- 验证文件大小（< 2MB）
+- 错误处理（格式不支持、大小超限）
+
+**壁纸样式应用**：
+- 渐变壁纸：`bg-gradient-to-br ${wallpaper}`（Tailwind 类）
+- 纯色壁纸：`bg-${wallpaper.replace('bg-', '')}`（Tailwind 类）
+- 自定义壁纸：内联样式 `style={{ backgroundImage: 'url(...)' }}`（避免 CSS 解析问题）
+
+**状态持久化**：
+- `updateWallpaper` 动作自动触发 `syncToDB()`
+- 壁纸设置保存到 IndexedDB
+- 刷新页面后壁纸自动恢复
+
+**已知限制**：
+1. **localStorage 存储限制**：data URL 可能较大，超出 5-10MB 限制
+   - **缓解措施**：限制上传图片 < 2MB
+   - **未来改进**：使用 IndexedDB 存储图片
+
+2. **自定义图片预览**：当前不在上传前预览
+   - **未来改进**：添加图片预览窗口
+
+3. **移动端兼容性**：右键菜单在移动端不适用
+   - **缓解措施**：添加长按支持（未来）
+
+### 构建验证
+- ✅ TypeScript 编译无错误
+- ✅ Turbopack 构建成功
+- ✅ 静态页面生成成功
+- ✅ 生产服务器启动成功
 
 #### Sprint 2: 核心应用实现（优先级：高）
 
@@ -479,21 +653,21 @@ rm -rf .next && npx next build
 ## Summary (总结)
 
 ### 📊 完成度
-- **Phase 1（基础架构）**: 100% ✅
+- **Phase 1（基础架构与桌面自定义）**: 100% ✅
 - **Phase 2（核心应用）**: 0% （待开始）
 - **Phase 3（高级功能）**: 0% （待开始）
 - **Phase 4（优化与适配）**: 0% （待开始）
 
 ### 🎯 总体进度
-**已完成约 30%**（基础架构和窗口系统完整，但应用内容待实现）
+**已完成约 35%**（基础架构、窗口系统、桌面自定义功能完整，但核心应用待实现）
 
 ### ⏱️ 预计时间线
-- **Sprint 2（核心应用）**: 1-2 周
-- **Sprint 3（高级功能）**: 1 周
-- **Sprint 4（优化与适配）**: 1 周
+- **Phase 2（核心应用）**: 1-2 周
+- **Phase 3（高级功能）**: 1 周
+- **Phase 4（优化与适配）**: 1 周
 - **总计**: 3-4 周完成 MVP
 
 ---
 
-*最后更新: 2026-01-12*
+*最后更新: 2026-01-31*
 *维护者: OpenCode Assistant*

@@ -3,6 +3,7 @@
 import { AnimatePresence } from 'framer-motion'
 import { useWindowStore } from '@/store/useWindowStore'
 import { Window } from './Window'
+import { WallpaperApp } from '@/components/apps/WallpaperApp'
 
 export function WindowManager() {
   const windows = useWindowStore(state => state.windows)
@@ -16,21 +17,26 @@ export function WindowManager() {
             key={window.id}
             id={window.id}
             title={window.title}
-            icon={window.appId === 'chrome' ? '🌐' : 
+            icon={window.appId === 'chrome' ? '🌐' :
                    window.appId === 'files' ? '📁' :
                    window.appId === 'calculator' ? '🧮' :
                    window.appId === 'settings' ? '⚙️' :
-                   window.appId === 'terminal' ? '💻' : '🪟'}
+                   window.appId === 'terminal' ? '💻' :
+                   window.appId === 'wallpaper' ? '' : '🪟'}
           >
-            <div className="flex h-full items-center justify-center text-surface-80">
-              <div className="text-center">
-                <div className="mb-4 text-4xl">🚧</div>
-                <div className="text-lg font-medium">App Coming Soon</div>
-                <div className="text-sm text-surface-60">
-                  {window.title} is under development
+            {window.appId === 'wallpaper' ? (
+              <WallpaperApp />
+            ) : (
+              <div className="flex h-full items-center justify-center text-surface-80">
+                <div className="text-center">
+                  <div className="mb-4 text-4xl">🚧</div>
+                  <div className="text-lg font-medium">App Coming Soon</div>
+                  <div className="text-sm text-surface-60">
+                    {window.title} is under development
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </Window>
         ))}
     </AnimatePresence>

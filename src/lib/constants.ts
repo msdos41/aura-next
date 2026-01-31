@@ -9,6 +9,9 @@ export const SHELF_HEIGHT = 64
 export const LAUNCHER_MAX_HEIGHT = 600
 export const TRAY_HEIGHT = 32
 
+export const WALLPAPER_WINDOW_WIDTH = 800
+export const WALLPAPER_WINDOW_HEIGHT = 700
+
 export const M3_COLORS = {
   primary: {
     0: '#000000',
@@ -81,6 +84,7 @@ export interface Workspace {
 export interface SystemSettings {
   theme: 'light' | 'dark' | 'auto'
   wallpaper: string
+  wallpaperType: 'gradient' | 'solid' | 'custom'
   showShelf: boolean
 }
 

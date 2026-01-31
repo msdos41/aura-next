@@ -3,7 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 import { generateId } from '@/lib/utils'
 import { dbAPI } from '@/lib/db'
 import type { WindowState, Workspace, SystemSettings } from '@/lib/constants'
-import { DEFAULT_APPS, WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, WINDOW_Z_INDEX_BASE } from '@/lib/constants'
+import { DEFAULT_APPS, WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT, WINDOW_Z_INDEX_BASE, WALLPAPER_WINDOW_WIDTH, WALLPAPER_WINDOW_HEIGHT, SHELF_HEIGHT } from '@/lib/constants'
 
 interface WindowStore {
   windows: WindowState[]
@@ -26,13 +26,15 @@ interface WindowStore {
   setActiveWorkspace: (id: string) => void
   addWorkspace: (name: string) => void
   updateSettings: (settings: Partial<SystemSettings>) => void
+  updateWallpaper: (wallpaper: string, wallpaperType: 'gradient' | 'solid' | 'custom') => void
   initializeFromDB: () => Promise<void>
   syncToDB: () => Promise<void>
 }
 
 const createDefaultSettings = (): SystemSettings => ({
   theme: 'auto',
-  wallpaper: 'default',
+  wallpaper: 'from-surface-90 to-surface-80',
+  wallpaperType: 'gradient',
   showShelf: true,
 })
 
@@ -55,14 +57,36 @@ export const useWindowStore = create<WindowStore>()(
         deletedWindowIds: new Set(),
 
         addWindow: (appId, title) => {
+          // 根据应用ID获取窗口大小
+          const windowWidth = appId === 'wallpaper'
+            ? WALLPAPER_WINDOW_WIDTH
+            : WINDOW_DEFAULT_WIDTH
+          const windowHeight = appId === 'wallpaper'
+            ? WALLPAPER_WINDOW_HEIGHT
+            : WINDOW_DEFAULT_HEIGHT
+
+          // 计算初始位置
+          let initialX: number
+          let initialY: number
+
+          if (appId === 'wallpaper') {
+            // 壁纸窗口居中显示
+            initialX = Math.round((window.innerWidth - windowWidth) / 2)
+            initialY = Math.round((window.innerHeight - SHELF_HEIGHT - windowHeight) / 2)
+          } else {
+            // 其他窗口使用 cascade 位置
+            initialX = 100 + get().windows.length * 50
+            initialY = 100 + get().windows.length * 50
+          }
+
           const newWindow: WindowState = {
             id: generateId(),
             appId,
             title,
-            x: 100 + get().windows.length * 50,
-            y: 100 + get().windows.length * 50,
-            width: WINDOW_DEFAULT_WIDTH,
-            height: WINDOW_DEFAULT_HEIGHT,
+            x: initialX,
+            y: initialY,
+            width: windowWidth,
+            height: windowHeight,
             zIndex: get().zIndexCounter + 1,
             isMinimized: false,
             isMaximized: false,
@@ -208,6 +232,18 @@ export const useWindowStore = create<WindowStore>()(
         updateSettings: (settings) => {
           set((state) => ({
             settings: { ...state.settings, ...settings },
+          }))
+
+          get().syncToDB()
+        },
+
+        updateWallpaper: (wallpaper, wallpaperType) => {
+          set((state) => ({
+            settings: {
+              ...state.settings,
+              wallpaper,
+              wallpaperType,
+            },
           }))
 
           get().syncToDB()

@@ -23,17 +23,51 @@ This documentation is organized into separate files for easier maintenance and u
 ### High-Level Structure
 
 ```
-chrome-os-clone/
+aura-next/
 ├── src/
-│   ├── app/              # Next.js App Router (pages, layouts)
-│   ├── components/       # React components
-│   │   ├── shell/      # OS shell UI (Desktop, Shelf, Tray, Launcher)
-│   │   ├── ui/         # Reusable UI components (Button, WindowControl)
-│   │   └── window/     # Window system (Window, WindowManager)
-│   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Utility functions and constants
-│   └── store/           # Zustand state management
-└── [config files]
+│   ├── app/                    # Next.js App Router
+│   │   ├── globals.css         # Global styles & M3 design tokens
+│   │   ├── layout.tsx          # Root layout with providers
+│   │   ├── page.tsx            # Home page (Desktop OS)
+│   │   └── proxy.ts           # API proxy for static assets
+│   │
+│   ├── components/             # React components
+│   │   ├── shell/             # OS shell UI
+│   │   │   ├── Desktop.tsx     # Workspace area + right-click menu
+│   │   │   ├── Shelf.tsx      # Bottom taskbar
+│   │   │   ├── Launcher.tsx    # App drawer overlay
+│   │   │   ├── Calendar.tsx    # Calendar component
+│   │   │   └── SystemTrayPanel.tsx # System tray panel
+│   │   ├── apps/              # Application components
+│   │   │   └── WallpaperApp.tsx # Wallpaper changer (Phase 1)
+│   │   ├── ui/                # Reusable UI components (M3 styled)
+│   │   │   ├── button.tsx      # Button with variants
+│   │   │   ├── slider.tsx      # Slider component
+│   │   │   ├── ContextMenu.tsx # Right-click context menu
+│   │   │   └── window/            # Window system
+│   │   │       ├── Window.tsx       # Draggable/resizable window
+│   │   │       └── WindowManager.tsx
+│   │
+│   ├── hooks/                 # Custom React hooks
+│   │   ├── useSystemTime.ts    # Real-time clock
+│   │   └── useWindowActions.ts
+│   │
+│   ├── lib/                   # Utility libraries
+│   │   ├── constants.ts        # M3 colors, window configs, app registry
+│   │   ├── db.ts              # IndexedDB wrapper
+│   │   ├── wallpapers.ts      # Wallpaper presets (Phase 1)
+│   │   └── utils.ts           # Helper functions
+│   │
+│   └── store/                # State management
+│       └── useWindowStore.ts  # Zustand store for windows/workspaces
+│
+├── .next/                    # Next.js build output
+├── node_modules/              # Dependencies
+├── next.config.ts            # Next.js configuration
+├── tsconfig.json             # TypeScript configuration
+├── tailwind.config.ts        # Tailwind CSS + M3 theme
+├── postcss.config.js         # PostCSS configuration
+└── package.json             # Dependencies and scripts
 ```
 
 ### Core Technologies
@@ -53,7 +87,7 @@ chrome-os-clone/
 ```
 User Action
     ↓
-Component (e.g., Shelf.tsx)
+Component (e.g., Shelf.tsx, Desktop.tsx)
     ↓
 Hook (useWindowActions)
     ↓
@@ -119,7 +153,9 @@ Component → Hook → Store → persist middleware → IndexedDB
 ```
 app/page.tsx
 ├── components/shell/Desktop.tsx
+│   ├── components/ui/ContextMenu.tsx
 │   ├── store/useWindowStore.ts
+│   ├── hooks/useWindowActions.ts
 │   └── lib/utils.ts
 ├── components/shell/Shelf.tsx
 │   ├── components/ui/button.tsx
@@ -137,12 +173,16 @@ app/page.tsx
 │   └── hooks/useSystemTime.ts
 └── components/window/WindowManager.tsx
     ├── store/useWindowStore.ts
-    └── components/window/Window.tsx
-        ├── components/ui/window-control.tsx
-        ├── hooks/useWindowActions.ts
+    ├── components/window/Window.tsx
+    │   ├── components/ui/window-control.tsx
+    │   ├── hooks/useWindowActions.ts
+    │   ├── store/useWindowStore.ts
+    │   ├── lib/utils.ts
+    │   └── lib/constants.ts
+    └── components/apps/WallpaperApp.tsx
+        ├── lib/wallpapers.ts
         ├── store/useWindowStore.ts
-        ├── lib/utils.ts
-        └── lib/constants.ts
+        └── lib/utils.ts
 ```
 
 ---
@@ -246,9 +286,10 @@ CUSTOMIZATION.md - Guides (update on API changes)
 
 - **[README.md](./README.md)** - Project overview and getting started
 - **[CURRENT_STATUS.md](./CURRENT_STATUS.md)** - Project status and progress
+- **[BUG_FIXES.md](./BUG_FIXES.md)** - Bug fixes and known issues
 - **[package.json](./package.json)** - Dependencies and scripts
 - **[tsconfig.json](./tsconfig.json)** - TypeScript configuration
 
 ---
 
-*Documentation maintained alongside codebase. Last updated: 2026-01-10*
+*Documentation maintained alongside codebase. Last updated: 2026-01-31*

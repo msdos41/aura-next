@@ -1,12 +1,13 @@
 # Customization Guide
 
-> **Last Updated**: 2026-01-10
+> **Last Updated**: 2026-01-31
 > **Related**: [ARCHITECTURE.md](./ARCHITECTURE.md) | [COMPONENTS.md](./COMPONENTS.md)
 
 ---
 
 ## 📚 Table of Contents
 
+- [Customizing Wallpaper](#customizing-wallpaper)
 - [Adding New Apps](#adding-new-apps)
 - [Creating Custom Components](#creating-custom-components)
 - [Adding Custom Windows](#adding-custom-windows)
@@ -19,9 +20,175 @@
 
 ---
 
+## 🎨 Customizing Wallpaper
+
+### Overview
+
+Aura-Next supports three types of wallpapers:
+1. **Gradient Wallpapers** - Predefined gradient backgrounds
+2. **Solid Color Wallpapers** - Predefined solid color backgrounds
+3. **Custom Wallpapers** - User-uploaded images (stored as data URLs)
+
+### How to Change Wallpaper
+
+**Method 1: Using Desktop Context Menu (Recommended)**
+
+1. Right-click anywhere on the desktop
+2. Select "更改壁纸" (Change Wallpaper) from the context menu
+3. Wallpaper selection panel opens
+4. Choose from:
+   - **预设壁纸** (Preset Wallpapers) - Select gradient or solid color
+   - **自定义壁纸** (Custom Wallpaper) - Upload your own image
+5. Click on a wallpaper to apply it immediately
+
+**Method 2: Programmatically**
+
+```typescript
+import { useWindowStore } from '@/store/useWindowStore'
+
+function MyComponent() {
+  const { updateWallpaper } = useWindowStore()
+
+  // Apply preset gradient
+  updateWallpaper('from-blue-400 to-purple-500', 'gradient')
+
+  // Apply solid color
+  updateWallpaper('bg-white', 'solid')
+
+  // Apply custom image (data URL)
+  updateWallpaper('data:image/png;base64,...', 'custom')
+}
+```
+
+### Adding Custom Presets
+
+Edit `src/lib/wallpapers.ts`:
+
+```typescript
+export const GRADIENT_WALLPAPERS: WallpaperPreset[] = [
+  // ... existing presets
+  {
+    id: 'gradient-7',
+    name: 'My Custom Gradient',
+    type: 'gradient',
+    value: 'from-pink-500 to-yellow-500',  // Tailwind gradient classes
+    preview: 'linear-gradient(135deg, #ec4899 0%, #eab308 100%)',
+  },
+]
+
+export const SOLID_WALLPAPERS: WallpaperPreset[] = [
+  // ... existing presets
+  {
+    id: 'solid-7',
+    name: 'My Custom Color',
+    type: 'solid',
+    value: 'bg-blue-500',  // Tailwind color class
+    preview: '#3b82f6',
+  },
+]
+```
+
+### Custom Image Upload
+
+**Image Format Support**:
+- JPEG (.jpg, .jpeg)
+- PNG (.png)
+- WebP (.webp)
+- GIF (.gif)
+
+**Size Limitation**:
+- Maximum file size: 2MB
+- Recommended size: 1920x1080 or higher
+- Images are stored as data URLs in IndexedDB
+
+**Upload Process**:
+```typescript
+const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file')
+    return
+  }
+
+  // Validate file size (2MB limit)
+  const MAX_SIZE = 2 * 1024 * 1024
+  if (file.size > MAX_SIZE) {
+    alert('Image size must be less than 2MB')
+    return
+  }
+
+  // Read and convert to data URL
+  const reader = new FileReader()
+  reader.onload = (event) => {
+    const dataUrl = event.target?.result as string
+    updateWallpaper(dataUrl, 'custom')
+  }
+  reader.readAsDataURL(file)
+}
+```
+
+### Wallpaper Types Explained
+
+**Gradient Wallpapers** (`wallpaperType: 'gradient'`):
+- Use Tailwind CSS gradient classes
+- Format: `from-[color]-[shade] to-[color]-[shade]`
+- Example: `from-blue-400 to-purple-500`
+- Applied as: `bg-gradient-to-br ${wallpaper}`
+
+**Solid Color Wallpapers** (`wallpaperType: 'solid'`):
+- Use Tailwind CSS color classes
+- Format: `bg-[color]-[shade]`
+- Example: `bg-white`, `bg-surface-95`
+- Applied as: `bg-[${wallpaper.replace('bg-', '')}]`
+
+**Custom Wallpapers** (`wallpaperType: 'custom'`):
+- Data URL of uploaded image
+- Format: `data:image/[format];base64,[data]`
+- Applied as: `bg-[url('${wallpaper}')] bg-cover bg-center`
+
+### Default Wallpapers
+
+**Gradient Presets**:
+1. Default (surface-90 → surface-80)
+2. Ocean (blue-400 → purple-500)
+3. Sunset (orange-400 → pink-500)
+4. Forest (green-400 → emerald-500)
+5. Midnight (indigo-900 → purple-900)
+6. Aurora (cyan-500 → purple-500 → pink-500)
+
+**Solid Color Presets**:
+1. White (#ffffff)
+2. Light Gray (#f4eff4)
+3. Soft Blue (#dbeafe)
+4. Soft Purple (#f3e8ff)
+5. Dark Gray (#484649)
+6. Dark Blue (#1e3a8a)
+
+### Troubleshooting
+
+**Issue: Custom image not displaying**
+- Check image file size (must be < 2MB)
+- Verify image format is supported
+- Clear browser cache and try again
+
+**Issue: Wallpaper not persisting**
+- Check IndexedDB storage quota
+- Try reducing image size
+- Use browser DevTools to inspect IndexedDB
+
+**Issue: Gradient not applying**
+- Verify Tailwind gradient syntax is correct
+- Check color exists in Tailwind config
+- Ensure `bg-gradient-to-br` class is present
+
+---
+
 ## 📦 Adding New Apps
 
-### Step 1: Register the App
+### Step 1: Register App
 
 Edit `src/lib/constants.ts`:
 

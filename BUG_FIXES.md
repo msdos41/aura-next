@@ -629,6 +629,150 @@ Improve color contrast for better readability:
 
 ---
 
+### Bug 9: Solid Color Wallpapers Not Changing
+
+**Severity**: 🔴 High (Critical)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Selecting solid color wallpapers (White, Light Gray, etc.) does not update desktop background
+- Gradient wallpapers work correctly
+- Custom image wallpapers work correctly
+- Only solid color wallpapers fail to apply
+- User experience: Wallpaper changer broken for solid colors
+
+#### Root Cause
+Mismatch in wallpaper value format between `wallpapers.ts` and `Desktop.tsx`:
+
+```typescript
+// wallpapers.ts (OLD - BUGGY)
+{
+  id: 'solid-1',
+  name: 'White',
+  type: 'solid',
+  value: 'bg-white',  // ❌ Includes bg- prefix
+  preview: '#ffffff',
+}
+
+// Desktop.tsx getWallpaperStyle() (OLD - BUGGY)
+case 'solid':
+  return settings.wallpaper.startsWith('bg-')
+    ? settings.wallpaper.replace('bg-', '')  // ❌ Removes bg- prefix
+    : settings.wallpaper
+```
+
+**Problem**:
+1. `wallpapers.ts` defines solid colors with `bg-` prefix (e.g., `'bg-white'`)
+2. `getWallpaperStyle()` removes the prefix, resulting in `'white'`
+3. Tailwind CSS expects full class name `'bg-white'`, not just `'white'`
+4. Result: Tailwind cannot apply the style
+
+#### Solution Implemented
+**Option**: Remove `bg-` prefix from wallpapers.ts and add it dynamically
+
+1. Updated `wallpapers.ts` to remove `bg-` prefix:
+```typescript
+// NEW CODE (FIXED)
+{
+  id: 'solid-1',
+  name: 'White',
+  type: 'solid',
+  value: 'white',  // ✅ No prefix
+  preview: '#ffffff',
+}
+```
+
+2. Updated `getWallpaperStyle()` to add prefix dynamically:
+```typescript
+// NEW CODE (FIXED)
+case 'solid':
+  return `bg-${settings.wallpaper}`  // ✅ Add bg- prefix
+```
+
+**Why this fixes it**:
+- Consistent format: wallpapers.ts stores color name without prefix
+- Desktop component dynamically adds `bg-` prefix
+- Tailwind receives correct class name (`bg-white`, `bg-blue-100`, etc.)
+- All wallpaper types work correctly
+
+#### Files Modified
+- `src/lib/wallpapers.ts`
+  - Removed `bg-` prefix from all solid wallpaper values
+  - Changed: `'bg-white'` → `'white'`, `'bg-surface-95'` → `'surface-95'`, etc.
+
+- `src/components/shell/Desktop.tsx`
+  - Changed solid case logic from `replace('bg-', '')` to `` `bg-${settings.wallpaper}` ``
+  - Simplified and more maintainable
+
+#### Testing Checklist
+- ✅ Select "White" → Desktop becomes white
+- ✅ Select "Light Gray" → Desktop becomes light gray
+- ✅ Select "Soft Blue" → Desktop becomes soft blue
+- ✅ Switch between multiple solid colors → All work correctly
+- ✅ Switch from solid to gradient → Works correctly
+- ✅ Switch from gradient to solid → Works correctly
+- ✅ Refresh page → Selected wallpaper persists
+
+---
+
+### Bug 10: Context Menu Text Center-Aligned
+
+**Severity**: 🟡 Medium (UX Issue)
+**Status**: ✅ Fixed
+
+#### Problem Description
+- Desktop right-click menu text appears centered instead of left-aligned
+- Icons and text should be left-aligned (ChromeOS standard)
+- User experience: Menu looks incorrect, doesn't match ChromeOS design
+
+#### Root Cause
+Text span using `flex-1` class in `src/components/ui/ContextMenu.tsx`:
+
+```typescript
+// OLD CODE (BUGGY)
+<button className="flex w-full items-center justify-start gap-3 text-left">
+  {item.icon && <span className="h-4 w-4">{item.icon}</span>}
+  <span className="flex-1">{item.label}</span>  {/* ❌ flex-1 causes issues */}
+</button>
+```
+
+**Problem**:
+- `flex-1` makes the text span occupy all remaining space
+- While `justify-start` is present on parent, `flex-1` may affect alignment
+- In some scenarios, this can cause visual centering or layout issues
+- Simpler approach: Remove `flex-1` and let natural flex layout handle alignment
+
+#### Solution Implemented
+Remove `flex-1` class from text span:
+
+```typescript
+// NEW CODE (FIXED)
+<button className="flex w-full items-center justify-start gap-3 text-left">
+  {item.icon && <span className="h-4 w-4">{item.icon}</span>}
+  <span>{item.label}</span>  {/* ✅ No flex-1 */}
+</button>
+```
+
+**Why this fixes it**:
+- Parent has `justify-start`, so items are naturally left-aligned
+- Text span takes only necessary space
+- No extra flex properties to interfere with alignment
+- Simpler and more predictable layout
+
+#### Files Modified
+- `src/components/ui/ContextMenu.tsx`
+  - Removed `flex-1` class from text span (line 102)
+  - Kept `justify-start` and `text-left` on button element
+
+#### Testing Checklist
+- ✅ Right-click on desktop → Menu appears
+- ✅ Menu text is left-aligned
+- ✅ Icons are left-aligned next to text
+- ✅ Menu follows ChromeOS design standard
+- ✅ All menu items align properly
+
+---
+
 ## 📊 Summary of Changes
 
 ### Modified Files
@@ -657,6 +801,17 @@ src/components/shell/Calendar.tsx
 ├── Added text-surface-90 and hover:text-surface-100 for better visibility
 ├── Changed left: '6px' to right: '6px'
 └── Added w-80 class (320px width)
+
+src/lib/wallpapers.ts
+├── Removed bg- prefix from solid wallpaper values
+└── Changed all 6 solid wallpapers (bg-white → white, etc.)
+
+src/components/shell/Desktop.tsx
+├── Updated getWallpaperStyle() solid case logic
+└── Changed from replace('bg-', '') to `bg-${settings.wallpaper}`
+
+src/components/ui/ContextMenu.tsx
+└── Removed flex-1 class from text span
 ```
 
 ### Lines of Code Changed
@@ -664,7 +819,10 @@ src/components/shell/Calendar.tsx
 - `Window.tsx`: ~8 lines modified (4 lines old + 4 lines new)
 - `Shelf.tsx`: ~6 lines modified
 - `Calendar.tsx`: ~15 lines modified
-- **Total**: ~39 lines
+- `wallpapers.ts`: ~6 lines modified
+- `Desktop.tsx`: ~1 line modified
+- `ContextMenu.tsx`: ~1 line modified
+- **Total**: ~47 lines
 
 ---
 
@@ -682,6 +840,8 @@ src/components/shell/Calendar.tsx
 | **Calendar position** | Wrong location (left) | ✅ Above date button (right) |
 | **Calendar width** | Too wide (full width) | ✅ Compact (320px, 1/4 screen) |
 | **Calendar visibility** | Poor contrast | ✅ High contrast, readable |
+| **Solid color wallpapers** | Not working | ✅ All wallpapers work correctly |
+| **Context menu alignment** | Text centered | ✅ Text left-aligned (ChromeOS standard) |
 | **Data consistency** | Orphaned windows in DB | ✅ DB always matches state |
 | **Bug reports expected** | High | ✅ Zero (for these issues) |
 
@@ -949,10 +1109,12 @@ style={{ bottom: '80px', left: '6px' }}  // Wrong!
 - [x] Bug 6: Calendar positioning fixed and tested
 - [x] Bug 7: Calendar width fixed and tested
 - [x] Bug 8: Calendar color contrast fixed and tested
+- [x] Bug 9: Solid color wallpapers not changing fixed and tested
+- [x] Bug 10: Context menu text alignment fixed and tested
 - [x] Build successful
 - [x] Documentation updated
 - [x] Ready for production
 
 ---
 
-*Bug fixes implemented and tested on 2026-01-14*
+*Bug fixes implemented and tested on 2026-01-31*
