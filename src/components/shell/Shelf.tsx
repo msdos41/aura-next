@@ -98,10 +98,7 @@ export function Shelf() {
         }}
         onContextMenu={handleShelfContextMenu}
       >
-        <div className={cn(
-          shelfPosition === 'left' && 'mt-4',
-          shelfPosition === 'right' && 'mt-4'
-        )}>
+        <div>
           <Button
             variant="ghost"
             size="icon"
@@ -148,7 +145,7 @@ export function Shelf() {
           <div
             className={cn(
               'flex items-center gap-3 rounded-xl p-2 hover:bg-surface-40/50 cursor-pointer',
-              shelfPosition !== 'bottom' && 'flex-col gap-1 mb-4'
+              shelfPosition !== 'bottom' && 'flex-col gap-1'
             )}
             onMouseDown={(e) => {
               if (e.button !== 0) return
