@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Circle, Wifi, Battery } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Launcher } from '@/components/shell/Launcher'
@@ -19,7 +19,19 @@ export function Shelf() {
   const { windows } = useWindowStore()
   const { openWindow, restoreWindow, bringToFront, minimizeWindow } = useWindowActions()
 
+  const lastClickTimestampsRef = useRef<Record<string, number>>({})
+  const DEBOUNCE_MS = 300
+
   const handleAppClick = (appId: string) => {
+    const lastClickTime = lastClickTimestampsRef.current[appId]
+    const now = Date.now()
+
+    if (lastClickTime && now - lastClickTime < DEBOUNCE_MS) {
+      return
+    }
+
+    lastClickTimestampsRef.current[appId] = now
+
     const existingWindow = windows.find(w => w.appId === appId)
     
     if (existingWindow) {
